@@ -5,14 +5,20 @@ import random
 
 from typing import Any, Dict, List, Tuple
 
-from gym_solo import types
+from gym_solo import solo_types
+
 
 class Solo8VanillaEnv(gym.Env):
+  """An unmodifed solo8 gym environment.
+  
+    Note that the model corresponds to the solo8v2.
+  """
+
   def __init__(self, **kwargs) -> None:
     """Create a solo8 env"""
     pass
 
-  def step(self, action: List[float]) -> Tuple[types.obs, float, bool, 
+  def step(self, action: List[float]) -> Tuple[solo_types.obs, float, bool, 
                                                Dict[Any, Any]]:
     """The agent takes a step in the environment.
 
@@ -21,17 +27,17 @@ class Solo8VanillaEnv(gym.Env):
         len(action) == the # of actuator
 
     Returns:
-      Tuple[types.obs, float, bool, Dict[Any, Any]]: A tuple of the next
+      Tuple[solo_types.obs, float, bool, Dict[Any, Any]]: A tuple of the next
         observation, the reward for that step, whether or not the episode 
         terminates, and an info dict for misc diagnostic details.
     """
     pass
 
-  def reset(self) -> types.obs:
+  def reset(self) -> solo_types.obs:
     """Reset the state of the environment and returns an initial observation.
     
     Returns:
-      types.obs: The initial observation of the space.
+      solo_types.obs: The initial observation of the space.
     """
     pass
 
