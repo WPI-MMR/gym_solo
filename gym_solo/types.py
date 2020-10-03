@@ -1,3 +1,4 @@
 from typing import TypeVar
 
-obs = List[int]
+# A state observation
+obs = List[int] 
