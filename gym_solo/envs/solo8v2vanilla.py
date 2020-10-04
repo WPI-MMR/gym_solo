@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
+import pkg_resources
 import pybullet as p
 import pybullet_data as pbd
 import random
@@ -15,7 +16,7 @@ from gym_solo import solo_types
 
 @dataclass
 class Solo8VanillaConfig(Solo8BaseConfig):
-  pass
+  urdf_path: str = 'assets/solo8v2/urdf/solo.urdf'
 
 
 class Solo8VanillaEnv(gym.Env):
@@ -26,8 +27,6 @@ class Solo8VanillaEnv(gym.Env):
   def __init__(self, use_gui: bool = False, realtime: bool = False, 
                config=None, **kwargs) -> None:
     """Create a solo8 env"""
-    # URDF path stuff
-
     self.client = p.connect(p.GUI if use_gui else p.DIRECT)
     p.setAdditionalSearchPath(pbd.getDataPath())
     p.setGravity(*config.gravity)
@@ -35,17 +34,18 @@ class Solo8VanillaEnv(gym.Env):
 
     self.plane = p.loadURDF('plane.urdf')
 
-    # self.robot = p.loadURDF(
-    #   config.urdf, config.robot_start_pos, 
-    #   p.getQuaternionFromEuler(config.robot_start_orientation_euler),
-    #   flags=p.URDF_USE_INERTIA_FROM_FILE, useFixedBase=False)
+    self.robot = p.loadURDF(
+      config.urdf, config.robot_start_pos, 
+      p.getQuaternionFromEuler(config.robot_start_orientation_euler),
+      flags=p.URDF_USE_INERTIA_FROM_FILE, useFixedBase=False)
     
-    # joint_cnt = p.getNumJoints(self.robot)
-    # self.action_space = spaces.Box(-motor_torque_bound, motor_toque_bound,
-    #                                shape=(joint_cnt,))
+    joint_cnt = p.getNumJoints(self.robot)
+    self.action_space = spaces.Box(-config.motor_torque_limit, 
+                                   config.motor_torque_limit,
+                                   shape=(joint_cnt,))
     
-    # for joint in range(joint_cnt):
-    #   pass
+    for joint in range(joint_cnt):
+      pass
 
   def step(self, action: List[float]) -> Tuple[solo_types.obs, float, bool, 
                                                Dict[Any, Any]]:

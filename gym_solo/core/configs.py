@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import List, Tuple
 
+import pkg_resources
+
 
 @dataclass
 class Solo8BaseConfig:
@@ -9,3 +11,7 @@ class Solo8BaseConfig:
   robot_start_pos: Tuple[float] = (0., 0., 1.)
   robot_start_orientation_euler: Tuple[float] = (0., 0., 0.)
   gravity: Tuple[float] = (0., 0., -9.81)
+
+  @property
+  def urdf(self):
+    return pkg_resources.resource_filename('gym_solo', self.urdf_path)
