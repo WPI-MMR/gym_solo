@@ -3,15 +3,10 @@
 
 name: Python Test & Coverage
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -36,7 +31,11 @@ jobs:
       run: |
         coverage run --source=gym_solo -m unittest discover
         coverage report
+    - name: Coveralls Post
+      run: |
+        coveralls --output=coveralls.json
     - name: Coveralls GitHub Action
       uses: coverallsapp/github-action@v1.1.2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: coveralls.json
