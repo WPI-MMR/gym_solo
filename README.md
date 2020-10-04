@@ -6,4 +6,20 @@
     alt='Coverage Status' /></a>
 </h1>
 
-An custom open ai gym environment for experimenting around with the solos.
+<p align='center'><i>A custom open ai gym environment for Solo experimentation.
+  </i></p>
+
+---
+
+# Installation
+The recommended way to set up this environment is to use virtualenv's for its
+sandboxing. With that:
+
+1. Clone and navigate to this repository from your terminal
+2. `python -m venv venv-gym-solo`
+3. `source venv-gym-solo/bin/activate`
+4. `pip install --upgrade wheel pip`
+5. `pip install -e .`
+
+And the package should be installed! Note that this is in development mode
+so any local changes will be reflected in the package as well.
