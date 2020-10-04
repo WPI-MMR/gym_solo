@@ -22,7 +22,7 @@ class Solo8VanillaConfig(Solo8BaseConfig):
 class Solo8VanillaEnv(gym.Env):
   """An unmodified solo8 gym environment.
   
-    Note that the model corresponds to the solo8v2.
+  Note that the model corresponds to the solo8v2.
   """
   def __init__(self, use_gui: bool = False, realtime: bool = False, 
                config=None, **kwargs) -> None:
@@ -45,7 +45,10 @@ class Solo8VanillaEnv(gym.Env):
                                    shape=(joint_cnt,))
     
     for joint in range(joint_cnt):
-      pass
+      p.changeDynamics(self.robot, joint, linearDamping=config.linear_damping,
+                       angularDamping=config.angular_damping,
+                       restitution=config.restitution,
+                       lateralFriction=config.lateral_friction)
 
   def step(self, action: List[float]) -> Tuple[solo_types.obs, float, bool, 
                                                Dict[Any, Any]]:
