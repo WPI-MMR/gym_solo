@@ -1,6 +1,6 @@
 <h1 align='center'> 
-  <img src="https://www.uokpl.rs/fpng/d/389-3896068_worcester-polytechnic-institute.png" 
-    alt="WPI Logo" width=40%/> <br /><br />
+  <img src="https://www.wpi.edu/sites/default/files/inline-image/Offices/Marketing-Communications/WPI_Inst_Prim_FulClr.png" 
+    alt="WPI Logo" width=300px/> <br />
   Solo Gym <br/><br/>
   <img src="https://github.com/WPI-MMR/gym-solo/workflows/Build/badge.svg" 
     alt="Build Status" />
