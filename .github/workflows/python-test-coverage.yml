@@ -1,7 +1,7 @@
 # Run tests and send coverage report
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Python Test & Coverage
+name: Build
 
 on: [push, pull_request]
 
