@@ -1,4 +1,7 @@
-<h1 align='center'> Solo Gym <br/><br/>
+<h1 align='center'> 
+  <img src="https://www.uokpl.rs/fpng/d/389-3896068_worcester-polytechnic-institute.png" 
+    alt="WPI Logo" width=40%/> <br /><br />
+  Solo Gym <br/><br/>
   <img src="https://github.com/WPI-MMR/gym-solo/workflows/Build/badge.svg" 
     alt="Build Status" />
   <a href='https://coveralls.io/github/WPI-MMR/gym-solo?branch=main'>
