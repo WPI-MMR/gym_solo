@@ -31,11 +31,8 @@ jobs:
       run: |
         coverage run --source=gym_solo -m unittest discover
         coverage report
-    - name: Coveralls Post
+    - name: Coveralls
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
       run: |
-        coveralls --output=coveralls.json
-    - name: Coveralls GitHub Action
-      uses: coverallsapp/github-action@v1.1.2
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: coveralls.json
+        coveralls
