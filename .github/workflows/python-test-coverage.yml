@@ -10,8 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        #: Maintain compatibility with 3.6 in case we need to use Pinocchio in the future.
-        python-version: [3.6, 3.8]
+        # Maintain compatibility with 3.6 in case we need to use Pinocchio in the future.
+        # python-version: [3.6, 3.8]
+        python-version: [3.8]
 
     steps:
     - uses: actions/checkout@v2
