@@ -1,22 +1,51 @@
-import gym
-import numpy as np
-import pybullet
-import random
-
+from dataclasses import dataclass
 from typing import Any, Dict, List, Tuple
 
+import numpy as np
+import pybullet as p
+import pybullet_data as pbd
+import random
+
+import gym
+from gym import error, spaces
+
+from gym_solo.core.configs import Solo8BaseConfig
 from gym_solo import solo_types
 
 
+@dataclass
+class Solo8VanillaConfig(Solo8BaseConfig):
+  pass
+
+
 class Solo8VanillaEnv(gym.Env):
-  """An unmodifed solo8 gym environment.
+  """An unmodified solo8 gym environment.
   
     Note that the model corresponds to the solo8v2.
   """
-
-  def __init__(self, **kwargs) -> None:
+  def __init__(self, use_gui: bool = False, realtime: bool = False, 
+               config=None, **kwargs) -> None:
     """Create a solo8 env"""
-    pass
+    # URDF path stuff
+
+    self.client = p.connect(p.GUI if use_gui else p.DIRECT)
+    p.setAdditionalSearchPath(pbd.getDataPath())
+    p.setGravity(*config.gravity)
+    p.setPhysicsEngineParameter(fixedTimeStep=config.dt, numSubSteps=1)
+
+    self.plane = p.loadURDF('plane.urdf')
+
+    # self.robot = p.loadURDF(
+    #   config.urdf, config.robot_start_pos, 
+    #   p.getQuaternionFromEuler(config.robot_start_orientation_euler),
+    #   flags=p.URDF_USE_INERTIA_FROM_FILE, useFixedBase=False)
+    
+    # joint_cnt = p.getNumJoints(self.robot)
+    # self.action_space = spaces.Box(-motor_torque_bound, motor_toque_bound,
+    #                                shape=(joint_cnt,))
+    
+    # for joint in range(joint_cnt):
+    #   pass
 
   def step(self, action: List[float]) -> Tuple[solo_types.obs, float, bool, 
                                                Dict[Any, Any]]:
@@ -40,9 +69,16 @@ class Solo8VanillaEnv(gym.Env):
       solo_types.obs: The initial observation of the space.
     """
     pass
+  
+  @property
+  def observation_space(self):
+    pass
 
   def render(self, mode: str = 'human', close: bool = False) -> None:
-    """Initialize the rendering engine.
+    """Unused.
+    
+    Rendering is toggled in the __init__ fn. This function is kept for API
+    conformance.
 
     Args:
       mode (str, optional): Unused--here only for the API. Defaults to 

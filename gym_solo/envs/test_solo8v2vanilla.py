@@ -1,5 +1,5 @@
 import unittest
-from gym_solo.envs.solo8v2vanilla_env import Solo8VanillaEnv
+from gym_solo.envs import solo8v2vanilla as solo_env
 
 import importlib
 import os
@@ -7,7 +7,7 @@ import os
 
 class TestSolo8v2VanillaEnv(unittest.TestCase):
   def setUp(self):
-    self.env = Solo8VanillaEnv()
+    self.env = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig())
     
   def testSeed(self):
     seed = 69
