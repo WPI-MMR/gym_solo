@@ -1,7 +1,7 @@
 <h1 align='center'> 
   Solo Gym<br/>
   <img src="https://upload.wikimedia.org/wikipedia/en/1/1b/WPI_logo.png" 
-    alt="WPI Logo" width=75px style="padding:15px"/> <br />
+    alt="WPI Logo" width=75px style="padding:40px; margin-bottom:-15px"/> <br />
   <img src="https://github.com/WPI-MMR/gym-solo/workflows/Build/badge.svg" 
     alt="Build Status" />
   <a href='https://coveralls.io/github/WPI-MMR/gym-solo?branch=main'>
