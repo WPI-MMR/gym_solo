@@ -1,7 +1,7 @@
 <h1 align='center'> 
-  <img src="https://www.wpi.edu/sites/default/files/inline-image/Offices/Marketing-Communications/WPI_Inst_Prim_FulClr.png" 
-    alt="WPI Logo" width=300px/> <br />
-  Solo Gym <br/><br/>
+  Solo Gym<br/>
+  <img src="https://upload.wikimedia.org/wikipedia/en/1/1b/WPI_logo.png" 
+    alt="WPI Logo" width=75px style="padding:15px"/> <br />
   <img src="https://github.com/WPI-MMR/gym-solo/workflows/Build/badge.svg" 
     alt="Build Status" />
   <a href='https://coveralls.io/github/WPI-MMR/gym-solo?branch=main'>
