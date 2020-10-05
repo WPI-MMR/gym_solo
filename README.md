@@ -1,5 +1,5 @@
 <h1 align='center'> 
-  Solo Gym<br/><br />
+  Solo Gym<br/>
   <img src="https://upload.wikimedia.org/wikipedia/en/1/1b/WPI_logo.png" 
     alt="WPI Logo" width=75px/> <br />
   <img src="https://github.com/WPI-MMR/gym-solo/workflows/Build/badge.svg" 
