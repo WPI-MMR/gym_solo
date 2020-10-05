@@ -3,6 +3,7 @@ from gym_solo.envs import solo8v2vanilla as solo_env
 
 from gym import error, spaces
 from parameterized import parameterized
+from unittest import mock
 
 import importlib
 import os
@@ -44,13 +45,11 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     ('nogui', {'use_gui': False}, p.DIRECT),
     ('gui', {'use_gui': True}, p.GUI),
   ])
-  def testGUI(self, name, kwargs, expected_ui):
+  @mock.patch('pybullet.connect')
+  def testGUI(self, name, kwargs, expected_ui, mock_connect):
     env = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig(),
                                    **kwargs)
-    conn_info = p.getConnectionInfo(env.client)
-
-    self.assertTrue(conn_info['isConnected'])
-    self.assertEqual(conn_info['connectionMethod'], expected_ui)
+    mock_connect.assert_called_with(expected_ui)
 
   def testActionSpace(self):
     limit = 0.5
