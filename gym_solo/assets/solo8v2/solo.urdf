@@ -17,8 +17,8 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_body.stl"/> -->
-        <mesh filename="meshes/stl/with_foot/solo_body.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_body.stl"/> -->
+        <mesh filename="solo_body.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -28,8 +28,8 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_body.stl"/> -->
-        <mesh filename="meshes/stl/with_foot/solo_body.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_body.stl"/> -->
+        <mesh filename="solo_body.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -64,8 +64,8 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_upper_leg_left_side.stl"/> -->
-        <mesh filename="meshes/stl/with_foot/solo_upper_leg_left_side.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_upper_leg_left_side.stl"/> -->
+        <mesh filename="solo_upper_leg_left_side.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -75,7 +75,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/stl/with_foot/solo_upper_leg_left_side.stl"/>
+        <mesh filename="solo_upper_leg_left_side.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -110,7 +110,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/stl/with_foot/solo_lower_leg_left_side.stl"/>
+        <mesh filename="solo_lower_leg_left_side.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -120,7 +120,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/stl/with_foot/solo_lower_leg_left_side.stl"/>
+        <mesh filename="solo_lower_leg_left_side.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -155,7 +155,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/stl/with_foot/solo_foot.stl"/>
+        <mesh filename="solo_foot.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -165,7 +165,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/stl/with_foot/solo_foot.stl"/>
+        <mesh filename="solo_foot.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -200,7 +200,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/stl/with_foot/solo_upper_leg_right_side.stl"/>
+        <mesh filename="solo_upper_leg_right_side.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -210,7 +210,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/stl/with_foot/solo_upper_leg_right_side.stl"/>
+        <mesh filename="solo_upper_leg_right_side.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -245,8 +245,8 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_lower_leg_right_side.stl"/> -->
-        <mesh filename="meshes/stl/with_foot/solo_lower_leg_right_side.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_lower_leg_right_side.stl"/> -->
+        <mesh filename="solo_lower_leg_right_side.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -256,8 +256,8 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_lower_leg_right_side.stl"/> -->
-        <mesh filename="meshes/stl/with_foot/solo_lower_leg_right_side.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_lower_leg_right_side.stl"/> -->
+        <mesh filename="solo_lower_leg_right_side.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -292,8 +292,8 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/stl/with_foot/solo_foot.stl"/>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_foot.stl"/> -->
+        <mesh filename="solo_foot.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_foot.stl"/> -->
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -303,8 +303,8 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_foot.stl"/> -->
-        <mesh filename="meshes/stl/with_foot/solo_foot.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_foot.stl"/> -->
+        <mesh filename="solo_foot.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -339,8 +339,8 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_upper_leg_left_side.stl"/> -->
-        <mesh filename="meshes/stl/with_foot/solo_upper_leg_left_side.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_upper_leg_left_side.stl"/> -->
+        <mesh filename="solo_upper_leg_left_side.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -350,8 +350,8 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_upper_leg_left_side.stl"/> -->
-        <mesh filename="meshes/stl/with_foot/solo_upper_leg_left_side.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_upper_leg_left_side.stl"/> -->
+        <mesh filename="solo_upper_leg_left_side.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -386,8 +386,8 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_lower_leg_left_side.stl"/> -->
-        <mesh filename="meshes/stl/with_foot/solo_lower_leg_left_side.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_lower_leg_left_side.stl"/> -->
+        <mesh filename="solo_lower_leg_left_side.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -397,8 +397,8 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_lower_leg_left_side.stl"/> -->
-        <mesh filename="meshes/stl/with_foot/solo_lower_leg_left_side.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_lower_leg_left_side.stl"/> -->
+        <mesh filename="solo_lower_leg_left_side.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -433,8 +433,8 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_foot.stl"/> -->
-        <mesh filename="meshes/stl/with_foot/solo_foot.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_foot.stl"/> -->
+        <mesh filename="solo_foot.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -444,8 +444,8 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_foot.stl"/> -->
-        <mesh filename="meshes/stl/with_foot/solo_foot.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_foot.stl"/> -->
+        <mesh filename="solo_foot.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -480,8 +480,8 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/stl/with_foot/solo_upper_leg_right_side.stl"/>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_upper_leg_right_side.stl"/> -->
+        <mesh filename="solo_upper_leg_right_side.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_upper_leg_right_side.stl"/> -->
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -491,8 +491,8 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/stl/with_foot/solo_upper_leg_right_side.stl"/>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_upper_leg_right_side.stl"/> -->
+        <mesh filename="solo_upper_leg_right_side.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_upper_leg_right_side.stl"/> -->
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -527,8 +527,8 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_lower_leg_right_side.stl"/> -->
-        <mesh filename="meshes/stl/with_foot/solo_lower_leg_right_side.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_lower_leg_right_side.stl"/> -->
+        <mesh filename="solo_lower_leg_right_side.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -538,8 +538,8 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_lower_leg_right_side.stl"/> -->
-        <mesh filename="meshes/stl/with_foot/solo_lower_leg_right_side.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_lower_leg_right_side.stl"/> -->
+        <mesh filename="solo_lower_leg_right_side.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -574,8 +574,8 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_foot.stl"/> -->
-        <mesh filename="meshes/stl/with_foot/solo_foot.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_foot.stl"/> -->
+        <mesh filename="solo_foot.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -585,8 +585,8 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <!-- <mesh filename="package://robot_properties_solo/meshes/stl/with_foot/solo_foot.stl"/> -->
-        <mesh filename="meshes/stl/with_foot/solo_foot.stl"/>
+        <!-- <mesh filename="package://robot_properties_solo/solo_foot.stl"/> -->
+        <mesh filename="solo_foot.stl"/>
       </geometry>
       <material name="grey">
         <color rgba="0.8 0.8 0.8 1.0"/>
