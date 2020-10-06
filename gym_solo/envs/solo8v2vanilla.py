@@ -6,6 +6,7 @@ import pkg_resources
 import pybullet as p
 import pybullet_data as pbd
 import random
+import time
 
 import gym
 from gym import error, spaces
@@ -27,28 +28,34 @@ class Solo8VanillaEnv(gym.Env):
   def __init__(self, use_gui: bool = False, realtime: bool = False, 
                config=None, **kwargs) -> None:
     """Create a solo8 env"""
-    self.client = p.connect(p.GUI if use_gui else p.DIRECT)
+    self._realtime = realtime
+    self._config = config
+
+    self._client = p.connect(p.GUI if use_gui else p.DIRECT)
     p.setAdditionalSearchPath(pbd.getDataPath())
-    p.setGravity(*config.gravity)
-    p.setPhysicsEngineParameter(fixedTimeStep=config.dt, numSubSteps=1)
+    p.setGravity(*self._config.gravity)
+    p.setPhysicsEngineParameter(fixedTimeStep=self._config.dt, numSubSteps=1)
 
-    self.plane = p.loadURDF('plane.urdf')
+    self._plane = p.loadURDF('plane.urdf')
 
-    self.robot = p.loadURDF(
-      config.urdf, config.robot_start_pos, 
-      p.getQuaternionFromEuler(config.robot_start_orientation_euler),
+    self._robot = p.loadURDF(
+      self._config.urdf, self._config.robot_start_pos, 
+      p.getQuaternionFromEuler(self._config.robot_start_orientation_euler),
       flags=p.URDF_USE_INERTIA_FROM_FILE, useFixedBase=False)
     
-    joint_cnt = p.getNumJoints(self.robot)
-    self.action_space = spaces.Box(-config.motor_torque_limit, 
-                                   config.motor_torque_limit,
+    joint_cnt = p.getNumJoints(self._robot)
+    self._zero_gains = [0.] * joint_cnt
+
+    self.action_space = spaces.Box(-self._config.motor_torque_limit, 
+                                   self._config.motor_torque_limit,
                                    shape=(joint_cnt,))
     
     for joint in range(joint_cnt):
-      p.changeDynamics(self.robot, joint, linearDamping=config.linear_damping,
-                       angularDamping=config.angular_damping,
-                       restitution=config.restitution,
-                       lateralFriction=config.lateral_friction)
+      p.changeDynamics(self._robot, joint, 
+                       linearDamping=self._config.linear_damping,
+                       angularDamping=self._config.angular_damping,
+                       restitution=self._config.restitution,
+                       lateralFriction=self._config.lateral_friction)
 
   def _step(self, action: List[float]) -> Tuple[solo_types.obs, float, bool, 
                                                 Dict[Any, Any]]:
@@ -63,7 +70,14 @@ class Solo8VanillaEnv(gym.Env):
         observation, the reward for that step, whether or not the episode 
         terminates, and an info dict for misc diagnostic details.
     """
-    pass
+    p.setJointMotorControlArray(self._robot, np.arange(self.action_space[0]),
+                                p.TORQUE_CONTROL, forces=action,
+                                positionGains=self._zero_gains, 
+                                velocityGains=self._zero_gains)
+    p.stepSimulation()
+
+    if self._realtime:
+      time.sleep(self.config.dt)
 
   def _reset(self) -> solo_types.obs:
     """Reset the state of the environment and returns an initial observation.
