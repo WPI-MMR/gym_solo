@@ -14,7 +14,7 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
   def setUp(self):
     self.env = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig())
     
-  def testSeed(self):
+  def test_seed(self):
     seed = 69
     self.env.seed(seed)
 
@@ -46,12 +46,12 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     ('gui', {'use_gui': True}, p.GUI),
   ])
   @mock.patch('pybullet.connect')
-  def testGUI(self, name, kwargs, expected_ui, mock_connect):
+  def test_GUI(self, name, kwargs, expected_ui, mock_connect):
     env = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig(),
                                    **kwargs)
     mock_connect.assert_called_with(expected_ui)
 
-  def testActionSpace(self):
+  def test_action_space(self):
     limit = 0.5
     joint_cnt = 12  # 8 dof + 4 "ankle" joints
 
@@ -62,6 +62,9 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     env = solo_env.Solo8VanillaEnv(config=config)
     
     self.assertEqual(env.action_space, space)
+
+  def test_no_action(self):
+    pass
 
 
 if __name__ == '__main__':
