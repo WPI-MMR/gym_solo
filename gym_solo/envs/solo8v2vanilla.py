@@ -50,8 +50,8 @@ class Solo8VanillaEnv(gym.Env):
                        restitution=config.restitution,
                        lateralFriction=config.lateral_friction)
 
-  def step(self, action: List[float]) -> Tuple[solo_types.obs, float, bool, 
-                                               Dict[Any, Any]]:
+  def _step(self, action: List[float]) -> Tuple[solo_types.obs, float, bool, 
+                                                Dict[Any, Any]]:
     """The agent takes a step in the environment.
 
     Args:
@@ -65,7 +65,7 @@ class Solo8VanillaEnv(gym.Env):
     """
     pass
 
-  def reset(self) -> solo_types.obs:
+  def _reset(self) -> solo_types.obs:
     """Reset the state of the environment and returns an initial observation.
     
     Returns:
@@ -77,21 +77,7 @@ class Solo8VanillaEnv(gym.Env):
   def observation_space(self):
     pass
 
-  def render(self, mode: str = 'human', close: bool = False) -> None:
-    """Unused.
-    
-    Rendering is toggled in the __init__ fn. This function is kept for API
-    conformance.
-
-    Args:
-      mode (str, optional): Unused--here only for the API. Defaults to 
-        'human'.
-      close (bool, optional): Unused--here only for the API. Defaults to 
-        False.
-    """
-    pass
-
-  def close(self) -> None:
+  def _close(self) -> None:
     """Soft shutdown the environment. """
     pass
 
