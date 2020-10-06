@@ -85,7 +85,12 @@ class Solo8VanillaEnv(gym.Env):
     Returns:
       solo_types.obs: The initial observation of the space.
     """
-    pass
+    p.resetBasePositionAndOrientation(
+      self._robot, self._config.robot_start_pos,
+      p.getQuaternionFromEuler(self._config.robot_start_orientation_euler))
+    
+    # TODO: Return observations for the state
+    return []
   
   @property
   def observation_space(self):
