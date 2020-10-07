@@ -17,6 +17,13 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
 
   def tearDown(self):
     self.env._close()
+
+  def assert_array_not_almost_equal(self, a, b):
+    a = np.array(a)
+    b = np.array(b)
+    
+    with self.assertRaises(AssertionError):
+      np.testing.assert_array_almost_equal(a, b)
     
   def test_seed(self):
     seed = 69
@@ -71,7 +78,7 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     no_op = np.zeros(self.env.action_space.shape[0])
 
     # Let the robot stabilize first
-    for i in range(2000):
+    for i in range(1000):
       self.env._step(no_op)
 
     position, orientation = p.getBasePositionAndOrientation(self.env._robot)
@@ -81,9 +88,8 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
         self.env._step(no_op)
 
       new_pos, new_or = p.getBasePositionAndOrientation(self.env._robot)
-
-      for old, new in zip(position, new_pos):
-        self.assertAlmostEqual(old, new)
+      np.testing.assert_array_almost_equal(position, new_pos)
+      np.testing.assert_array_almost_equal(orientation, new_or)
 
     with self.subTest('with action'):
       action = np.array([5.] * self.env.action_space.shape[0])
@@ -91,8 +97,26 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
         self.env._step(action)
 
       new_pos, new_or = p.getBasePositionAndOrientation(self.env._robot)
-      for old, new in zip(position, new_pos):
-        self.assertNotAlmostEqual(old, new)
+      self.assert_array_not_almost_equal(position, new_pos)
+      self.assert_array_not_almost_equal(orientation, new_or)
+
+  def test_reset(self):
+    base_pos, base_or = p.getBasePositionAndOrientation(self.env._robot)
+    
+    action = np.array([5.] * self.env.action_space.shape[0])
+    for i in range(100):
+      self.env._step(action)
+      
+    new_pos, new_or = p.getBasePositionAndOrientation(self.env._robot)
+    self.assert_array_not_almost_equal(base_pos, new_pos)
+    self.assert_array_not_almost_equal(base_or, new_or)
+
+    self.env._reset()
+
+    new_pos, new_or = p.getBasePositionAndOrientation(self.env._robot)
+    np.testing.assert_array_almost_equal(base_pos, new_pos)
+    np.testing.assert_array_almost_equal(base_or, new_or)
+    
 
 if __name__ == '__main__':
   unittest.main()

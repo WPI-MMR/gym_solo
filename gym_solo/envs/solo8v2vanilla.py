@@ -37,27 +37,14 @@ class Solo8VanillaEnv(gym.Env):
     p.setPhysicsEngineParameter(fixedTimeStep=self._config.dt, numSubSteps=1)
 
     self._plane = p.loadURDF('plane.urdf')
+    self._robot, joint_cnt = self._load_robot()
 
-    self._robot = p.loadURDF(
-      self._config.urdf, self._config.robot_start_pos, 
-      p.getQuaternionFromEuler(self._config.robot_start_orientation_euler),
-      flags=p.URDF_USE_INERTIA_FROM_FILE, useFixedBase=False)
-
-    joint_cnt = p.getNumJoints(self._robot)
     self._zero_gains = np.zeros(joint_cnt)
-    p.setJointMotorControlArray(self._robot, np.arange(joint_cnt),
-                                p.VELOCITY_CONTROL, forces=np.zeros(joint_cnt))
-
     self.action_space = spaces.Box(-self._config.motor_torque_limit, 
                                    self._config.motor_torque_limit,
                                    shape=(joint_cnt,))
     
-    for joint in range(joint_cnt):
-      p.changeDynamics(self._robot, joint, 
-                       linearDamping=self._config.linear_damping,
-                       angularDamping=self._config.angular_damping,
-                       restitution=self._config.restitution,
-                       lateralFriction=self._config.lateral_friction)
+    self._reset()
 
   def _step(self, action: List[float]) -> Tuple[solo_types.obs, float, bool, 
                                                 Dict[Any, Any]]:
@@ -88,9 +75,12 @@ class Solo8VanillaEnv(gym.Env):
     Returns:
       solo_types.obs: The initial observation of the space.
     """
-    p.resetBasePositionAndOrientation(
-      self._robot, self._config.robot_start_pos,
-      p.getQuaternionFromEuler(self._config.robot_start_orientation_euler))
+    p.removeBody(self._robot)
+    self._robot, _ = self._load_robot()
+
+    # Let gravity do it's thing and reset the environment
+    for i in range(1000):
+      self._step(self._zero_gains)
     
     # TODO: Return observations for the state
     return []
@@ -99,6 +89,30 @@ class Solo8VanillaEnv(gym.Env):
   def observation_space(self):
     # TODO: Dynamically generate this from the observation factory.
     pass
+
+  def _load_robot(self) -> Tuple[int, int]:
+    """Load the robot from URDF and reset the dynamics.
+
+    Returns:
+        Tuple[int, int]: the id of the robot object and the number of joints.
+    """
+    robot_id = p.loadURDF(
+      self._config.urdf, self._config.robot_start_pos, 
+      p.getQuaternionFromEuler(self._config.robot_start_orientation_euler),
+      flags=p.URDF_USE_INERTIA_FROM_FILE, useFixedBase=False)
+
+    joint_cnt = p.getNumJoints(robot_id)
+    p.setJointMotorControlArray(robot_id, np.arange(joint_cnt),
+                                p.VELOCITY_CONTROL, forces=np.zeros(joint_cnt))
+
+    for joint in range(joint_cnt):
+      p.changeDynamics(robot_id, joint, 
+                       linearDamping=self._config.linear_damping,
+                       angularDamping=self._config.angular_damping,
+                       restitution=self._config.restitution,
+                       lateralFriction=self._config.lateral_friction)
+
+    return robot_id, joint_cnt
 
   def _close(self) -> None:
     """Soft shutdown the environment. """
