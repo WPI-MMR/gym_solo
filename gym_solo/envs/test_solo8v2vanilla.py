@@ -84,7 +84,15 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
 
       for old, new in zip(position, new_pos):
         self.assertAlmostEqual(old, new)
-      
+
+    with self.subTest('with action'):
+      action = np.array([5.] * self.env.action_space.shape[0])
+      for i in range(10):
+        self.env._step(action)
+
+      new_pos, new_or = p.getBasePositionAndOrientation(self.env._robot)
+      for old, new in zip(position, new_pos):
+        self.assertNotAlmostEqual(old, new)
 
 if __name__ == '__main__':
   unittest.main()
