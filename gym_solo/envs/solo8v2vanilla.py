@@ -97,6 +97,7 @@ class Solo8VanillaEnv(gym.Env):
   
   @property
   def observation_space(self):
+    # TODO: Dynamically generate this from the observation factory.
     pass
 
   def _close(self) -> None:
