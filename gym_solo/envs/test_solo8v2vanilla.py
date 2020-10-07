@@ -122,7 +122,7 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     new_pos, new_or = p.getBasePositionAndOrientation(self.env._robot)
     np.testing.assert_array_almost_equal(base_pos, new_pos)
     np.testing.assert_array_almost_equal(base_or, new_or)
-    
+
 
 if __name__ == '__main__':
   unittest.main()
