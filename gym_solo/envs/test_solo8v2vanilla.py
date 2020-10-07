@@ -24,6 +24,12 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     
     with self.assertRaises(AssertionError):
       np.testing.assert_array_almost_equal(a, b)
+
+  @mock.patch('time.sleep', autospec=True, return_value=None)
+  def test_realtime(self, mock_time):
+    env = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig(),
+                                   realtime=True)
+    self.assertTrue(mock_time.called)
     
   def test_seed(self):
     seed = 69
