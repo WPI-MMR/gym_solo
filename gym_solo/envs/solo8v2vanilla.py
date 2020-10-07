@@ -17,7 +17,7 @@ from gym_solo import solo_types
 
 @dataclass
 class Solo8VanillaConfig(Solo8BaseConfig):
-  urdf_path: str = 'assets/solo8v2/urdf/solo.urdf'
+  urdf_path: str = 'assets/solo8v2/solo.urdf'
 
 
 class Solo8VanillaEnv(gym.Env):
@@ -42,9 +42,11 @@ class Solo8VanillaEnv(gym.Env):
       self._config.urdf, self._config.robot_start_pos, 
       p.getQuaternionFromEuler(self._config.robot_start_orientation_euler),
       flags=p.URDF_USE_INERTIA_FROM_FILE, useFixedBase=False)
-    
+
     joint_cnt = p.getNumJoints(self._robot)
-    self._zero_gains = [0.] * joint_cnt
+    self._zero_gains = np.zeros(joint_cnt)
+    p.setJointMotorControlArray(self._robot, np.arange(joint_cnt),
+                                p.VELOCITY_CONTROL, forces=np.zeros(joint_cnt))
 
     self.action_space = spaces.Box(-self._config.motor_torque_limit, 
                                    self._config.motor_torque_limit,
@@ -70,14 +72,15 @@ class Solo8VanillaEnv(gym.Env):
         observation, the reward for that step, whether or not the episode 
         terminates, and an info dict for misc diagnostic details.
     """
-    p.setJointMotorControlArray(self._robot, np.arange(self.action_space[0]),
+    p.setJointMotorControlArray(self._robot, 
+                                np.arange(self.action_space.shape[0]),
                                 p.TORQUE_CONTROL, forces=action,
                                 positionGains=self._zero_gains, 
                                 velocityGains=self._zero_gains)
     p.stepSimulation()
 
     if self._realtime:
-      time.sleep(self.config.dt)
+      time.sleep(self._config.dt)
 
   def _reset(self) -> solo_types.obs:
     """Reset the state of the environment and returns an initial observation.
@@ -98,7 +101,7 @@ class Solo8VanillaEnv(gym.Env):
 
   def _close(self) -> None:
     """Soft shutdown the environment. """
-    pass
+    p.disconnect()
 
   def seed(self, seed: int) -> None:
     """Set the seeds for random and numpy

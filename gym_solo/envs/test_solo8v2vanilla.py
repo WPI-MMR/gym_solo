@@ -6,6 +6,7 @@ from parameterized import parameterized
 from unittest import mock
 
 import importlib
+import numpy as np
 import os
 import pybullet as p
 
@@ -13,6 +14,9 @@ import pybullet as p
 class TestSolo8v2VanillaEnv(unittest.TestCase):
   def setUp(self):
     self.env = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig())
+
+  def tearDown(self):
+    self.env._close()
     
   def test_seed(self):
     seed = 69
@@ -63,9 +67,24 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     
     self.assertEqual(env.action_space, space)
 
-  def test_no_action(self):
-    pass
+  def test_actions(self):
+    no_op = np.zeros(self.env.action_space.shape[0])
 
+    # Let the robot stabilize first
+    for i in range(2000):
+      self.env._step(no_op)
+
+    position, orientation = p.getBasePositionAndOrientation(self.env._robot)
+
+    with self.subTest('no action'):
+      for i in range(10):
+        self.env._step(no_op)
+
+      new_pos, new_or = p.getBasePositionAndOrientation(self.env._robot)
+
+      for old, new in zip(position, new_pos):
+        self.assertAlmostEqual(old, new)
+      
 
 if __name__ == '__main__':
   unittest.main()
