@@ -6,6 +6,7 @@ from parameterized import parameterized
 from unittest import mock
 
 import importlib
+import numpy as np
 import os
 import pybullet as p
 
@@ -13,8 +14,24 @@ import pybullet as p
 class TestSolo8v2VanillaEnv(unittest.TestCase):
   def setUp(self):
     self.env = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig())
+
+  def tearDown(self):
+    self.env._close()
+
+  def assert_array_not_almost_equal(self, a, b):
+    a = np.array(a)
+    b = np.array(b)
     
-  def testSeed(self):
+    with self.assertRaises(AssertionError):
+      np.testing.assert_array_almost_equal(a, b)
+
+  @mock.patch('time.sleep', autospec=True, return_value=None)
+  def test_realtime(self, mock_time):
+    env = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig(),
+                                   realtime=True)
+    self.assertTrue(mock_time.called)
+    
+  def test_seed(self):
     seed = 69
     self.env.seed(seed)
 
@@ -46,12 +63,12 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     ('gui', {'use_gui': True}, p.GUI),
   ])
   @mock.patch('pybullet.connect')
-  def testGUI(self, name, kwargs, expected_ui, mock_connect):
+  def test_GUI(self, name, kwargs, expected_ui, mock_connect):
     env = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig(),
                                    **kwargs)
     mock_connect.assert_called_with(expected_ui)
 
-  def testActionSpace(self):
+  def test_action_space(self):
     limit = 0.5
     joint_cnt = 12  # 8 dof + 4 "ankle" joints
 
@@ -62,6 +79,49 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     env = solo_env.Solo8VanillaEnv(config=config)
     
     self.assertEqual(env.action_space, space)
+
+  def test_actions(self):
+    no_op = np.zeros(self.env.action_space.shape[0])
+
+    # Let the robot stabilize first
+    for i in range(1000):
+      self.env._step(no_op)
+
+    position, orientation = p.getBasePositionAndOrientation(self.env._robot)
+
+    with self.subTest('no action'):
+      for i in range(10):
+        self.env._step(no_op)
+
+      new_pos, new_or = p.getBasePositionAndOrientation(self.env._robot)
+      np.testing.assert_array_almost_equal(position, new_pos)
+      np.testing.assert_array_almost_equal(orientation, new_or)
+
+    with self.subTest('with action'):
+      action = np.array([5.] * self.env.action_space.shape[0])
+      for i in range(10):
+        self.env._step(action)
+
+      new_pos, new_or = p.getBasePositionAndOrientation(self.env._robot)
+      self.assert_array_not_almost_equal(position, new_pos)
+      self.assert_array_not_almost_equal(orientation, new_or)
+
+  def test_reset(self):
+    base_pos, base_or = p.getBasePositionAndOrientation(self.env._robot)
+    
+    action = np.array([5.] * self.env.action_space.shape[0])
+    for i in range(100):
+      self.env._step(action)
+      
+    new_pos, new_or = p.getBasePositionAndOrientation(self.env._robot)
+    self.assert_array_not_almost_equal(base_pos, new_pos)
+    self.assert_array_not_almost_equal(base_or, new_or)
+
+    self.env._reset()
+
+    new_pos, new_or = p.getBasePositionAndOrientation(self.env._robot)
+    np.testing.assert_array_almost_equal(base_pos, new_pos)
+    np.testing.assert_array_almost_equal(base_or, new_or)
 
 
 if __name__ == '__main__':
