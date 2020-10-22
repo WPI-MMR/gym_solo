@@ -33,7 +33,7 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     
   def test_seed(self):
     seed = 69
-    self.env.seed(seed)
+    self.env._seed(seed)
 
     import numpy as np
     import random
@@ -52,7 +52,7 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
       importlib.reload(np)
       importlib.reload(random)
 
-      self.env.seed(seed)
+      self.env._seed(seed)
 
       self.assertEqual(numpy_control, float(np.random.rand(1)))
       self.assertEqual(random_control, random.random())
@@ -85,13 +85,13 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
 
     # Let the robot stabilize first
     for i in range(1000):
-      self.env._step(no_op)
+      self.env.step(no_op)
 
     position, orientation = p.getBasePositionAndOrientation(self.env._robot)
 
     with self.subTest('no action'):
       for i in range(10):
-        self.env._step(no_op)
+        self.env.step(no_op)
 
       new_pos, new_or = p.getBasePositionAndOrientation(self.env._robot)
       np.testing.assert_array_almost_equal(position, new_pos)
@@ -100,7 +100,7 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     with self.subTest('with action'):
       action = np.array([5.] * self.env.action_space.shape[0])
       for i in range(10):
-        self.env._step(action)
+        self.env.step(action)
 
       new_pos, new_or = p.getBasePositionAndOrientation(self.env._robot)
       self.assert_array_not_almost_equal(position, new_pos)
@@ -111,13 +111,13 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     
     action = np.array([5.] * self.env.action_space.shape[0])
     for i in range(100):
-      self.env._step(action)
+      self.env.step(action)
       
     new_pos, new_or = p.getBasePositionAndOrientation(self.env._robot)
     self.assert_array_not_almost_equal(base_pos, new_pos)
     self.assert_array_not_almost_equal(base_or, new_or)
 
-    self.env._reset()
+    self.env.reset()
 
     new_pos, new_or = p.getBasePositionAndOrientation(self.env._robot)
     np.testing.assert_array_almost_equal(base_pos, new_pos)

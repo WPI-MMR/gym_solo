@@ -44,9 +44,9 @@ class Solo8VanillaEnv(gym.Env):
                                    self._config.motor_torque_limit,
                                    shape=(joint_cnt,))
     
-    self._reset()
+    self.reset()
 
-  def _step(self, action: List[float]) -> Tuple[solo_types.obs, float, bool, 
+  def step(self, action: List[float]) -> Tuple[solo_types.obs, float, bool, 
                                                 Dict[Any, Any]]:
     """The agent takes a step in the environment.
 
@@ -69,7 +69,7 @@ class Solo8VanillaEnv(gym.Env):
     if self._realtime:
       time.sleep(self._config.dt)
 
-  def _reset(self) -> solo_types.obs:
+  def reset(self) -> solo_types.obs:
     """Reset the state of the environment and returns an initial observation.
     
     Returns:
@@ -80,7 +80,7 @@ class Solo8VanillaEnv(gym.Env):
 
     # Let gravity do it's thing and reset the environment
     for i in range(1000):
-      self._step(self._zero_gains)
+      self.step(self._zero_gains)
     
     # TODO: Return observations for the state
     return []
@@ -118,7 +118,7 @@ class Solo8VanillaEnv(gym.Env):
     """Soft shutdown the environment. """
     p.disconnect()
 
-  def seed(self, seed: int) -> None:
+  def _seed(self, seed: int) -> None:
     """Set the seeds for random and numpy
 
     Args:
