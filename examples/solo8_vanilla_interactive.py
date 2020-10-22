@@ -1,3 +1,8 @@
+""" An interactive demo for the Solo v2 Vanilla.
+
+This demo simply applies 0 torques to the motors and lets the user interact
+with the robot via the gui.
+"""
 import argparse
 import gym
 import numpy as np
