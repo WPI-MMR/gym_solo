@@ -72,6 +72,8 @@ class Solo8VanillaEnv(gym.Env):
     if self._realtime:
       time.sleep(self._config.dt)
 
+    return self.obs_factory.get_obs(), 0.0, False, {}
+
   def reset(self) -> solo_types.obs:
     """Reset the state of the environment and returns an initial observation.
     
