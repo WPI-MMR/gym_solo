@@ -72,6 +72,7 @@ class Solo8VanillaEnv(gym.Env):
     if self._realtime:
       time.sleep(self._config.dt)
 
+    # TODO: Fix this
     return self.obs_factory.get_obs(), 0.0, False, {}
 
   def reset(self) -> solo_types.obs:
@@ -105,10 +106,6 @@ class Solo8VanillaEnv(gym.Env):
       self._config.urdf, self._config.robot_start_pos, 
       p.getQuaternionFromEuler(self._config.robot_start_orientation_euler),
       flags=p.URDF_USE_INERTIA_FROM_FILE, useFixedBase=False)
-
-    p.addUserDebugLine([0, 0, 0], [0.1, 0, 0], [1, 0, 0], parentObjectUniqueId=robot_id)
-    p.addUserDebugLine([0, 0, 0], [0, 0.1, 0], [0, 1, 0], parentObjectUniqueId=robot_id)
-    p.addUserDebugLine([0, 0, 0], [0, 0, 0.1], [0, 0, 1], parentObjectUniqueId=robot_id)
 
     joint_cnt = p.getNumJoints(robot_id)
     p.setJointMotorControlArray(robot_id, np.arange(joint_cnt),

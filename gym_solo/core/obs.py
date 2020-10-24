@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from typing import List
+
 import pybullet as p
 import numpy as np
 import math
@@ -15,6 +17,11 @@ class Observation(ABC):
   @property
   @abstractmethod
   def observation_space(self):
+    pass
+
+  @property
+  @abstractmethod
+  def labels(self) -> List[str]:
     pass
 
   @abstractmethod
@@ -36,6 +43,8 @@ class ObservationFactory:
 
 
 class Test(Observation):
+  labels = ['test']
+
   def __init__(self, body_id: int):
     pass
   
@@ -52,6 +61,8 @@ class MotorEncoders(Observation):
 
 
 class TorsoIMU(Observation):
+  labels = ['θ_x', 'θ_y', 'θ_z', 'vx', 'vy', 'vz', 'wx', 'wy', 'z']
+
   def __init__(self, body_id: int, degrees=False):
     self.robot = body_id
     self._degrees = degrees
