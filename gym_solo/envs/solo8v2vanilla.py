@@ -72,8 +72,9 @@ class Solo8VanillaEnv(gym.Env):
     if self._realtime:
       time.sleep(self._config.dt)
 
-    # TODO: Fix this
-    return self.obs_factory.get_obs(), 0.0, False, {}
+    # TODO: Fix rewards
+    obs_values, obs_labels = self.obs_factory.get_obs()
+    return obs_values, 0.0, False, {'labels': obs_labels}
 
   def reset(self) -> solo_types.obs:
     """Reset the state of the environment and returns an initial observation.
@@ -88,13 +89,12 @@ class Solo8VanillaEnv(gym.Env):
     for i in range(1000):
       self.step(self._zero_gains)
     
-    # TODO: Return observations for the state
-    return []
+    obs_values, _ = self.obs_factory.get_obs()
+    return obs_values
   
   @property
   def observation_space(self):
-    # TODO: Dynamically generate this from the observation factory.
-    pass
+    return self.obs_factory.get_observation_space()
 
   def _load_robot(self) -> Tuple[int, int]:
     """Load the robot from URDF and reset the dynamics.

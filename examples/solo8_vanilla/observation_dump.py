@@ -16,7 +16,6 @@ if __name__ == '__main__':
   config = solo8v2vanilla.Solo8VanillaConfig()
   env = gym.make('solo8vanilla-v0', use_gui=True, realtime=True, config=config)
 
-  env.obs_factory.register_observation(obs.Test(env.robot))
   env.obs_factory.register_observation(obs.TorsoIMU(env.robot))
 
   try:
