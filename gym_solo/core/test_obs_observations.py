@@ -39,7 +39,7 @@ class TestTorsoIMU(unittest.TestCase):
     np.testing.assert_allclose(o.observation_space.low, lower)
     np.testing.assert_allclose(o.observation_space.high, upper)
 
-    # It seems as if is_bounded requires all dimensions to be bounded:
+    # It seems as if is_bounded() requires all dimensions to be bounded:
     # https://github.com/openai/gym/blob/master/gym/spaces/box.py#L66-L67
     self.assertFalse(o.observation_space.is_bounded())
 

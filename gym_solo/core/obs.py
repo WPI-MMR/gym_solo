@@ -15,20 +15,47 @@ from gym_solo import solo_types
 class Observation(ABC):
   @abstractmethod
   def __init__(self, body_id: int):
+    """Create a new Observation.
+    
+    Note that for every child of this class, each one *needs* to specify
+    which pybullet body id they would like to track the observation for.
+
+    Args:
+      body_id (int): PyBullet body id to get the observation for.
+    """
     pass
   
   @property
   @abstractmethod
   def observation_space(self) -> spaces.Space:
+    """Get the observation space of the Observation.
+
+    Returns:
+      spaces.Space: The observation space.
+    """
     pass
 
   @property
   @abstractmethod
   def labels(self) -> List[str]:
+    """A list of labels corresponding to the observation.
+    
+    i.e. if the observation was [1, 2, 3], and the labels were ['a', 'b', 'c'],
+    then a = 1, b = 2, c = 3.
+
+    Returns:
+      List[str]: Labels, where the index is the same as it's respective 
+      observation.
+    """
     pass
 
   @abstractmethod
   def compute(self) -> solo_types.obs:
+    """Compute the observation for the current state.
+
+    Returns:
+        solo_types.obs: Specified observation for the current state.
+    """
     pass
 
 

@@ -1,4 +1,5 @@
 import unittest
+from gym_solo.core import obs
 
 
 class TestObservationFactory(unittest.TestCase):
