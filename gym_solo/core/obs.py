@@ -85,6 +85,7 @@ class TorsoIMU(Observation):
     lower = [angle_min, angle_min, angle_min, # Orientation
              -np.inf, -np.inf, -np.inf,       # Linear Velocity
              -np.inf, -np.inf, -np.inf]       # Angular Velocity
+
     upper = [angle_max, angle_max, angle_max, # Same as above
              np.inf, np.inf, np.inf,          
              np.inf, np.inf, np.inf]         
