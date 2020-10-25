@@ -54,13 +54,15 @@ class Observation(ABC):
     """Compute the observation for the current state.
 
     Returns:
-        solo_types.obs: Specified observation for the current state.
+      solo_types.obs: Specified observation for the current state.
     """
     pass
 
 
 class ObservationFactory:
   def __init__(self):
+    """Create a new Observation Factory.
+    """
     self._observations = []
     self._obs_space = None
 
@@ -69,6 +71,16 @@ class ObservationFactory:
     self._observations.append(obs)
 
   def get_obs(self) -> Tuple[solo_types.obs, List[str]]:
+    """Get all of the observations for the current state.
+
+    Returns:
+      Tuple[solo_types.obs, List[str]]: The observations and associated labels.
+        len(observations) == len(labels) and labels[i] corresponds to the
+        i-th observation.
+    """
+    if not self._observations:
+      return np.empty(shape=(0,)), []
+
     all_obs = [] 
     all_labels = []
     
@@ -76,7 +88,7 @@ class ObservationFactory:
       all_obs.append(obs.compute())
       all_labels.append(obs.labels)
 
-    observations = [o for obs in all_obs for o in obs]
+    observations = np.concatenate(all_obs)
     labels = [l for lbl in all_labels for l in lbl]
 
     return observations, labels
