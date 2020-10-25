@@ -110,6 +110,20 @@ class ObservationFactory:
     return observations, labels
 
   def get_observation_space(self, generate=False) -> spaces.Box:
+    """Get the combined observation space of all of the registered observations.
+
+    Args:
+      generate (bool, optional): Whether or not to regenerate the observation
+        space or just used the cached ersion. Note that some Observations
+        might dynamically generate their observation space, so this could be a
+        potentially expensive operation. Defaults to False.
+
+    Raises:
+      ValueError: If no observations are registered.
+
+    Returns:
+      spaces.Box: The observation space of the registered Observations.
+    """
     if not self._observations:
       raise ValueError('Can\'t generate an empty observation space')
     if self._obs_space and not generate:
