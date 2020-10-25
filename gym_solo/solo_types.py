@@ -1,4 +1,6 @@
 from typing import List
 
+import numpy as np
+
 # A state observation
-obs = List[float] 
+obs = np.ndarray

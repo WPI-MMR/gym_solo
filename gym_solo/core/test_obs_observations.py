@@ -2,6 +2,7 @@ import unittest
 from gym_solo.core import obs
 
 from parameterized import parameterized
+from unittest import mock
 
 import numpy as np
 import math
@@ -41,6 +42,28 @@ class TestTorsoIMU(unittest.TestCase):
     # It seems as if is_bounded requires all dimensions to be bounded:
     # https://github.com/openai/gym/blob/master/gym/spaces/box.py#L66-L67
     self.assertFalse(o.observation_space.is_bounded())
+
+  @mock.patch('pybullet.getBasePositionAndOrientation', autospec=True)
+  @mock.patch('pybullet.getBaseVelocity', autospec=True)
+  def test_compute(self, mock_vel, mock_base):
+    mock_base.return_value = (None, 
+                              [0, 0, 0.707, 0.707])
+    mock_vel.return_value = ([30, 60, 90],
+                             [30, 60, 90])
+
+    with self.subTest('degrees'):
+      o = obs.TorsoIMU(0, degrees=True)
+      np.testing.assert_allclose(o.compute(),
+                                 [0, 0, 90,
+                                  30, 60, 90,
+                                  30, 60, 90])
+    
+    with self.subTest('radians'):
+      o = obs.TorsoIMU(0, degrees=False)
+      np.testing.assert_allclose(o.compute(),
+                                 [0, 0, 1/2 * np.pi,
+                                  30, 60, 90,
+                                  1/6 * np.pi, 1/3 * np.pi, 1/2 * np.pi])
 
 
 if __name__ == '__main__':

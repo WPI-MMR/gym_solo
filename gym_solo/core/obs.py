@@ -41,7 +41,7 @@ class ObservationFactory:
     # TODO: Assert that the observation is valid
     self._observations.append(obs)
 
-  def get_obs(self) -> Tuple[List[float], List[str]]:
+  def get_obs(self) -> Tuple[solo_types.obs, List[str]]:
     all_obs = [] 
     all_labels = []
     
@@ -118,19 +118,27 @@ class TorsoIMU(Observation):
     return spaces.Box(low=np.array(lower), high=np.array(upper))
 
   def compute(self) -> solo_types.obs:
+    """Compute the torso IMU values for a state.
+
+    Returns:
+      solo_types.obs: The observation for the current state (accessed via
+        pybullet)
+    """
     _, orien_quat = p.getBasePositionAndOrientation(self.robot)
 
     # Orien is in (x, y, z)
-    orien = p.getEulerFromQuaternion(orien_quat)
+    orien = np.array(p.getEulerFromQuaternion(orien_quat))
+
     v_lin, v_ang = p.getBaseVelocity(self.robot)
+    v_lin = np.array(v_lin) 
+    v_ang = np.array(v_ang)
 
     if self._degrees:
-        to_degrees = lambda lst: [l * 180. / math.pi for l in lst]
+      orien = np.degrees(orien)
+    else:
+      v_ang = np.radians(v_ang)
 
-        orien = to_degrees(orien)
-        v_ang = to_degrees(v_ang)
-
-    return orien + v_lin + v_ang
+    return np.concatenate([orien, v_lin, v_ang])
 
 class FootDistances(Observation):
   pass
