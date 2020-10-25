@@ -99,6 +99,51 @@ class TestObservationFactory(unittest.TestCase):
                                     np.array([1, 2, 5, 6]))
       self.assertListEqual(labels, ['1', '2', '5', '6'])
 
+  def test_get_observation_space_no_observations(self):
+    of = obs.ObservationFactory()
+    with self.assertRaises(ValueError):
+      of.get_observation_space()
+
+  def test_get_observation_space_single_observation(self):
+    of = obs.ObservationFactory()
+
+    test_obs = CompliantObs(None)
+    of.register_observation(test_obs)
+
+    with self.subTest('fresh'):
+      self.assertEqual(of.get_observation_space(),
+                       CompliantObs.observation_space)
+
+    test_obs.observation_space = spaces.Box(low=np.array([5., 6.]), 
+                                            high=np.array([5., 6.]))
+    
+    with self.subTest('from cache'):
+      self.assertEqual(of.get_observation_space(),
+                       CompliantObs.observation_space)
+    
+    with self.subTest('regenerate cache'):
+      self.assertEqual(of.get_observation_space(generate=True),
+                       test_obs.observation_space)
+
+  def test_get_observation_space_multiple_observations(self):
+    of = obs.ObservationFactory()
+    of.register_observation(CompliantObs(None))
+    of.get_observation_space()
+
+    test_obs = CompliantObs(None)
+    test_obs.observation_space = spaces.Box(low=np.array([5., 6.]), 
+                                            high=np.array([5., 6.]))
+    of.register_observation(test_obs)
+
+    with self.subTest('from cache'):
+      self.assertEqual(of.get_observation_space(),
+                       CompliantObs.observation_space)
+
+    with self.subTest('regenerate cache'):
+      self.assertEqual(of.get_observation_space(generate=True),
+                       spaces.Box(low=np.array([0., 0., 5., 6.]),
+                                  high=np.array([3., 3., 5., 6.])))
+
 
 if __name__ == '__main__':
   unittest.main()

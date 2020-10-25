@@ -112,7 +112,6 @@ class ObservationFactory:
   def get_observation_space(self, generate=False) -> spaces.Box:
     if not self._observations:
       raise ValueError('Can\'t generate an empty observation space')
-
     if self._obs_space and not generate:
       return self._obs_space
 
@@ -165,11 +164,11 @@ class TorsoIMU(Observation):
     angle_min = -180. if self._degrees else -np.pi
     angle_max = 180. if self._degrees else np.pi
 
-    lower = [angle_min, angle_min, angle_min, # Orientation
-             -np.inf, -np.inf, -np.inf,       # Linear Velocity
-             -np.inf, -np.inf, -np.inf]       # Angular Velocity
+    lower = [angle_min, angle_min, angle_min,  # Orientation
+             -np.inf, -np.inf, -np.inf,        # Linear Velocity
+             -np.inf, -np.inf, -np.inf]        # Angular Velocity
 
-    upper = [angle_max, angle_max, angle_max, # Same as above
+    upper = [angle_max, angle_max, angle_max,  # Same as above
              np.inf, np.inf, np.inf,          
              np.inf, np.inf, np.inf]         
 
