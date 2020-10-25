@@ -1,17 +1,74 @@
 import unittest
 from gym_solo.core import obs
 
+from gym import spaces
+import numpy as np
+
+
+class CompliantObs(obs.Observation):
+  observation_space = spaces.Box(low=np.array([0., 0.]), 
+                                 high=np.array([3., 3.]))
+  labels = ['1', '2']
+
+  def __init__(self, body_id):
+    pass
+
+  def compute(self):
+    return np.array([1, 2])
+
 
 class TestObservationFactory(unittest.TestCase):
   def test_empty(self):
-    o = obs.ObservationFactory()
+    of = obs.ObservationFactory()
 
-    self.assertFalse(o._observations)
-    self.assertIsNone(o._obs_space)
+    self.assertFalse(of._observations)
+    self.assertIsNone(of._obs_space)
 
-    observations, labels = o.get_obs()
+    observations, labels = of.get_obs()
     self.assertEqual(observations.size, 0)
     self.assertFalse(labels)
+
+  def test_register_happy(self):
+    of = obs.ObservationFactory()
+
+    with self.subTest('single obs'):
+      test_obs = CompliantObs(None)
+      of.register_observation(test_obs)
+
+      self.assertEqual(len(of._observations), 1)
+      self.assertEqual(of._observations[0], test_obs)
+      self.assertEqual(of.get_observation_space(),
+                      CompliantObs.observation_space)
+
+    with self.subTest('multiple_obs'):
+      test_obs2 = CompliantObs(2)
+      of.register_observation(test_obs2)
+
+      self.assertEqual(len(of._observations), 2)
+      self.assertNotEqual(of._observations[0], test_obs2)
+      self.assertEqual(of._observations[1], test_obs2)
+
+      with self.subTest('Cached observation space'):
+        self.assertEqual(of.get_observation_space(),
+                        spaces.Box(low=0, high=3, shape=(2,)))
+
+      with self.subTest('Fresh observation space'):
+        self.assertEqual(of.get_observation_space(generate=True),
+                        spaces.Box(low=0, high=3, shape=(4,)))
+
+  def test_register_mismatch(self):
+    of = obs.ObservationFactory()
+    test_obs = CompliantObs(None)
+    
+    with self.subTest('obs_space mismatch'):
+      test_obs.labels = ['1', '2', '3']
+      with self.assertRaises(ValueError):
+        of.register_observation(test_obs)
+
+    with self.subTest('observation mismatch'):
+      test_obs.observation_space = spaces.Box(low=0, high=3, shape=(3,))
+      with self.assertRaises(ValueError):
+        of.register_observation(test_obs)
 
 
 if __name__ == '__main__':

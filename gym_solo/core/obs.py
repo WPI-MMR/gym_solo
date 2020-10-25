@@ -67,7 +67,23 @@ class ObservationFactory:
     self._obs_space = None
 
   def register_observation(self, obs: Observation):
-    # TODO: Assert that the observation is valid
+    """Add an observation to be computed.
+
+    Args:
+      obs (Observation): Observation to be tracked.
+    """
+
+    lbl_len = len(obs.labels)
+    obs_space_len = len(obs.observation_space.low)
+    obs_len = obs.compute().size
+
+    if lbl_len != obs_space_len:
+      raise ValueError('Labels have length {} != obs space len {}'.format(
+        lbl_len, obs_space_len))
+    if lbl_len != obs_len:
+      raise ValueError('Labels have length {} != obs len {}'.format(
+        lbl_len, obs_len))
+    
     self._observations.append(obs)
 
   def get_obs(self) -> Tuple[solo_types.obs, List[str]]:
@@ -102,7 +118,7 @@ class ObservationFactory:
       lower.extend(obs.observation_space.low)
       upper.extend(obs.observation_space.high)
 
-    self._obs_space = spaces.Box(low=lower, high=upper)
+    self._obs_space = spaces.Box(low=np.array(lower), high=np.array(upper))
     return self._obs_space
 
 
