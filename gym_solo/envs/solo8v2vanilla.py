@@ -94,6 +94,7 @@ class Solo8VanillaEnv(gym.Env):
   
   @property
   def observation_space(self):
+    # TODO: Write tests for this function
     return self.obs_factory.get_observation_space()
 
   def _load_robot(self) -> Tuple[int, int]:

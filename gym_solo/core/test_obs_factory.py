@@ -70,6 +70,32 @@ class TestObservationFactory(unittest.TestCase):
       with self.assertRaises(ValueError):
         of.register_observation(test_obs)
 
+  def test_get_obs(self):
+    of = obs.ObservationFactory()
+
+    with self.subTest('no observations'):
+      observations, labels = of.get_obs()
+      
+      np.testing.assert_array_equal(observations, np.empty(shape=(0,)))
+      self.assertFalse(labels)
+
+    with self.subTest('single observation'):
+      of.register_observation(CompliantObs(None))
+      observations, labels = of.get_obs()
+
+      np.testing.assert_array_equal(observations, 
+                                    np.array([1, 2]))
+      self.assertListEqual(labels, ['1', '2'])
+
+    with self.subTest('multiple observations'):
+      of.register_observation(CompliantObs(None))
+      observations, labels = of.get_obs()
+
+      np.testing.assert_array_equal(observations, 
+                                    np.array([1, 2, 1, 2]))
+      self.assertListEqual(labels, ['1', '2', '1', '2'])
+    
+
 
 if __name__ == '__main__':
   unittest.main()
