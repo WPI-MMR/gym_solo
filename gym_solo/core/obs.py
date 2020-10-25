@@ -19,7 +19,7 @@ class Observation(ABC):
   
   @property
   @abstractmethod
-  def observation_space(self):
+  def observation_space(self) -> spaces.Space:
     pass
 
   @property
@@ -92,9 +92,20 @@ class TorsoIMU(Observation):
     self._degrees = degrees
 
   @property
-  def observation_space(self):
-    angle_min = -180. if self.degrees else -math.pi
-    angle_max = 180 if self.degrees else math.pi
+  def observation_space(self) -> spaces.Box:
+    """Get the observation space for the IMU mounted on the Torso. 
+
+    The IMU in this case return the orientation of the torso (x, y, z angles),
+    the linear velocity (vx, vy, vz), and the angular velocity (wx, wy, wz). 
+    Note that the range for the angle measurements is [-180, 180] degrees. This
+    value can be toggled between degrees and radians at instantiation.
+
+    Returns:
+      spaces.Box: The observation space corresponding to (θx, θy, θz, vx, vy, 
+        vz, wx, wy, wz)
+    """
+    angle_min = -180. if self._degrees else -np.pi
+    angle_max = 180. if self._degrees else np.pi
 
     lower = [angle_min, angle_min, angle_min, # Orientation
              -np.inf, -np.inf, -np.inf,       # Linear Velocity
@@ -104,7 +115,7 @@ class TorsoIMU(Observation):
              np.inf, np.inf, np.inf,          
              np.inf, np.inf, np.inf]         
 
-    return spaces.Box(low=lower, high=upper)
+    return spaces.Box(low=np.array(lower), high=np.array(upper))
 
   def compute(self) -> solo_types.obs:
     _, orien_quat = p.getBasePositionAndOrientation(self.robot)
