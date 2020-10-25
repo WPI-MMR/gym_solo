@@ -7,12 +7,12 @@ import numpy as np
 import math
 
 
-class TestObservations(unittest.TestCase):
+class TestTorsoIMU(unittest.TestCase):
   @parameterized.expand([
     ('default', 0, False),
     ('degrees', 1, True)
   ])
-  def test_torso_imu_attributes(self, name, robot_id, degrees):
+  def test_attributes(self, name, robot_id, degrees):
     o = obs.TorsoIMU(robot_id, degrees=degrees)
     self.assertEqual(o.robot, robot_id)
     self.assertEqual(o._degrees, degrees)
@@ -21,7 +21,7 @@ class TestObservations(unittest.TestCase):
     ('degrees', -180., 180.),
     ('radians', -np.pi, np.pi)
   ])
-  def test_torso_imu_bounds(self, name, angle_min, angle_max):
+  def test_bounds(self, name, angle_min, angle_max):
     o = obs.TorsoIMU(0, name == 'degrees')
 
     angles = {'θx', 'θy', 'θz'}
