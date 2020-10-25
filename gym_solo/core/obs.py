@@ -38,6 +38,7 @@ class ObservationFactory:
     self._obs_space = None
 
   def register_observation(self, obs: Observation):
+    # TODO: Assert that the observation is valid
     self._observations.append(obs)
 
   def get_obs(self) -> Tuple[List[float], List[str]]:
@@ -71,9 +72,22 @@ class MotorEncoders(Observation):
 
 
 class TorsoIMU(Observation):
-  labels: List[str] = ['θ_x', 'θ_y', 'θ_z', 'vx', 'vy', 'vz', 'wx', 'wy', 'z']
+  """Get the orientation and velocities of the Solo 8 torso.
 
-  def __init__(self, body_id: int, degrees=False):
+  Attributes:
+    labels (List[str]): The labels associated with the outputted observation
+    robot (int): PyBullet BodyId for the robot.
+  """
+  labels: List[str] = ['θx', 'θy', 'θz', 'vx', 'vy', 'vz', 'wx', 'wy', 'wz']
+
+  def __init__(self, body_id: int, degrees: bool = False):
+    """Create a new TorsoIMU observation
+
+    Args:
+      body_id (int): The PyBullet body id for the robot.
+      degrees (bool, optional): Whether or not to return angles in degrees. 
+        Defaults to False.
+    """
     self.robot = body_id
     self._degrees = degrees
 
