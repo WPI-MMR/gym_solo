@@ -88,13 +88,16 @@ class TestObservationFactory(unittest.TestCase):
       self.assertListEqual(labels, ['1', '2'])
 
     with self.subTest('multiple observations'):
-      of.register_observation(CompliantObs(None))
+      test_obs = CompliantObs(None)
+      test_obs.compute = lambda: np.array([5, 6])
+      test_obs.labels = ['5', '6']
+
+      of.register_observation(test_obs)
       observations, labels = of.get_obs()
 
       np.testing.assert_array_equal(observations, 
-                                    np.array([1, 2, 1, 2]))
-      self.assertListEqual(labels, ['1', '2', '1', '2'])
-    
+                                    np.array([1, 2, 5, 6]))
+      self.assertListEqual(labels, ['1', '2', '5', '6'])
 
 
 if __name__ == '__main__':

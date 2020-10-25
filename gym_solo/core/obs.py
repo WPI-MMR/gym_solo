@@ -110,6 +110,9 @@ class ObservationFactory:
     return observations, labels
 
   def get_observation_space(self, generate=False) -> spaces.Box:
+    if not self._observations:
+      raise ValueError('Can\'t generate an empty observation space')
+
     if self._obs_space and not generate:
       return self._obs_space
 
