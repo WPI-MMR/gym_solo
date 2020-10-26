@@ -4,8 +4,8 @@
     alt="WPI Logo" width=75px/> <br />
   <img src="https://github.com/WPI-MMR/gym-solo/workflows/Build/badge.svg" 
     alt="Build Status" />
-  <a href='https://coveralls.io/github/WPI-MMR/gym-solo?branch=main'>
-    <img src='https://coveralls.io/repos/github/WPI-MMR/gym-solo/badge.svg?branch=main' 
+  <a href='https://coveralls.io/github/WPI-MMR/gym_solo?branch=master'>
+    <img src='https://coveralls.io/repos/github/WPI-MMR/gym_solo/badge.svg?branch=master' 
     alt='Coverage Status' /></a>
 </h1>
 
@@ -26,3 +26,12 @@ sandboxing. With that:
 
 And the package should be installed! Note that this is in development mode
 so any local changes will be reflected in the package as well.
+
+
+# Running Tests
+All of our tests can be run by using python's built in `unittest`. To run the
+tests, use the following procedure:
+
+1. Source the environment
+2. Navigate to the root of the repository
+3. `python -m unittest discover -v`
