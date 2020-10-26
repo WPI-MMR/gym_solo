@@ -26,3 +26,12 @@ sandboxing. With that:
 
 And the package should be installed! Note that this is in development mode
 so any local changes will be reflected in the package as well.
+
+
+# Running Tests
+All of our tests can be run by using python's built in `unittest`. To run the
+tests, use the following procedure:
+
+1. Source the environment
+2. Navigate to the root of the repository
+3. `python -m unittest discover -v`
