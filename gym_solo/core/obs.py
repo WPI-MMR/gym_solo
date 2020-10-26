@@ -72,7 +72,6 @@ class ObservationFactory:
     Args:
       obs (Observation): Observation to be tracked.
     """
-
     lbl_len = len(obs.labels)
     obs_space_len = len(obs.observation_space.low)
     obs_len = obs.compute().size
@@ -138,10 +137,6 @@ class ObservationFactory:
     return self._obs_space
 
 
-class MotorEncoders(Observation):
-  pass
-
-
 class TorsoIMU(Observation):
   """Get the orientation and velocities of the Solo 8 torso.
 
@@ -149,6 +144,7 @@ class TorsoIMU(Observation):
     labels (List[str]): The labels associated with the outputted observation
     robot (int): PyBullet BodyId for the robot.
   """
+  # TODO: Add angular acceleration to support production IMUs
   labels: List[str] = ['θx', 'θy', 'θz', 'vx', 'vy', 'vz', 'wx', 'wy', 'wz']
 
   def __init__(self, body_id: int, degrees: bool = False):
@@ -210,6 +206,3 @@ class TorsoIMU(Observation):
       v_ang = np.radians(v_ang)
 
     return np.concatenate([orien, v_lin, v_ang])
-
-class FootDistances(Observation):
-  pass
