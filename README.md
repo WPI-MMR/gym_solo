@@ -4,8 +4,8 @@
     alt="WPI Logo" width=75px/> <br />
   <img src="https://github.com/WPI-MMR/gym-solo/workflows/Build/badge.svg" 
     alt="Build Status" />
-  <a href='https://coveralls.io/github/WPI-MMR/gym-solo?branch=main'>
-    <img src='https://coveralls.io/repos/github/WPI-MMR/gym-solo/badge.svg?branch=main' 
+  <a href='https://coveralls.io/github/WPI-MMR/gym_solo?branch=master'>
+    <img src='https://coveralls.io/repos/github/WPI-MMR/gym_solo/badge.svg?branch=master' 
     alt='Coverage Status' /></a>
 </h1>
 
