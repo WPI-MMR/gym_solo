@@ -206,3 +206,51 @@ class TorsoIMU(Observation):
       v_ang = np.radians(v_ang)
 
     return np.concatenate([orien, v_lin, v_ang])
+
+
+
+class MotorEncoder(Observation):
+  """Get the position of the all the joints
+
+  Attributes:
+    labels (List[str]): The labels associated with the outputted observation
+    robot (int): PyBullet BodyId for the robot.
+  """
+
+  def __init__(self, body_id: int, degrees: bool = False):
+    """Create a new MotorEncoder observation
+
+    Args:
+      body_id (int): The PyBullet body id for the robot.
+    """
+    self.robot = body_id
+  
+  @property
+  def observation_space(self) -> spaces.Space:
+    """Get the observation space for the joints
+
+    Returns:
+      spaces.Space: The observation space.
+    """
+    pass
+
+  @property
+  def labels(self) -> List[str]:
+    """A list of labels corresponding to the observation.
+    
+    i.e. if the observation was [1, 2, 3], and the labels were ['a', 'b', 'c'],
+    then a = 1, b = 2, c = 3.
+
+    Returns:
+      List[str]: Labels, where the index is the same as it's respective 
+      observation.
+    """
+    pass
+
+  def compute(self) -> solo_types.obs:
+    """Compute the motor position values for the current state.
+
+    Returns:
+      solo_types.obs: Specified observation for the current state.
+    """
+    pass
