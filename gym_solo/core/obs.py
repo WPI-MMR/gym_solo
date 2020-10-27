@@ -245,7 +245,9 @@ class MotorEncoder(Observation):
       List[str]: Labels, where the index is the same as it's respective 
       observation.
     """
-    pass
+    num_joints = p.getNumJoints(self.robot)
+    labels = [p.getJointInfo(robot_id, joint)[1].decode('UTF-8') for joint in range(num_joints)]
+    return labels
 
   def compute(self) -> solo_types.obs:
     """Compute the motor position values for the current state.
