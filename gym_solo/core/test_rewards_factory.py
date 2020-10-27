@@ -21,6 +21,7 @@ class TestRewardsFactory(unittest.TestCase):
     ('single', {1: 2.5}, 2.5),
     ('two_happy', {1: 1, 2: 2}, 5),
     ('0-weight', {0: 1, 2: 2}, 4),
+    ('negative-weight', {-1: 1, 2: 2}, 3),
     ('three', {1: 1, 2: 2, 3: 3}, 14),
   ])
   def test_register_and_compute(self, name, rewards_dict, expected_reward):
