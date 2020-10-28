@@ -96,6 +96,6 @@ class UprightReward(Reward):
       float: A real-valued number in [-1, 1], where 1 means perfectly upright 
       whilst -1 means that the robot is literally upside down. 
     """
-    _, quat = p.getBasePositionAndOrientation(self.robot)
-    unused_x, y, unused_z = np.array(p.geteulerFromQuaternion(quat))
-    return fully_upright * y / fully_upright ** 2
+    _, quat = p.getBasePositionAndOrientation(self._robot_id)
+    unused_x, y, unused_z = np.array(p.getEulerFromQuaternion(quat))
+    return self._fully_upright * y / self._fully_upright ** 2
