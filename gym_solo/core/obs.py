@@ -222,8 +222,12 @@ class MotorEncoder(Observation):
 
     Args:
       body_id (int): The PyBullet body id for the robot.
+      degrees (bool, optional): Whether or not to return angles in degrees. 
+        Defaults to False.
     """
     self.robot = body_id
+    self._degrees = degrees
+    self.num_joints = p.getNumJoints(self.robot)
   
   @property
   def observation_space(self) -> spaces.Space:
@@ -232,7 +236,14 @@ class MotorEncoder(Observation):
     Returns:
       spaces.Space: The observation space.
     """
-    pass
+    position_min = -572.96 if self._degrees else -10
+    position_max = 572.96 if self._degrees else 10
+
+    lower = np.full(num_joints, position_min)
+
+    upper = np.full(num_joints, position_max)      
+
+    return spaces.Box(low=lower, high=upper)
 
   @property
   def labels(self) -> List[str]:
@@ -245,8 +256,8 @@ class MotorEncoder(Observation):
       List[str]: Labels, where the index is the same as it's respective 
       observation.
     """
-    num_joints = p.getNumJoints(self.robot)
-    labels = [p.getJointInfo(robot_id, joint)[1].decode('UTF-8') for joint in range(num_joints)]
+    labels = [p.getJointInfo(robot_id, joint)[1].decode('UTF-8') 
+              for joint in range(self.num_joints)]
     return labels
 
   def compute(self) -> solo_types.obs:
@@ -255,4 +266,7 @@ class MotorEncoder(Observation):
     Returns:
       solo_types.obs: Specified observation for the current state.
     """
-    pass
+    joint_values = [p.getJointState(env.robot, 0)[i] 
+                    for i in range(self.num_joints)]
+    return np.array(joint_values)
+    

@@ -66,5 +66,10 @@ class TestTorsoIMU(unittest.TestCase):
                                   1/6 * np.pi, 1/3 * np.pi, 1/2 * np.pi])
 
 
+class TestMotorEncoder(unittest.TestCase):
+  def test_stub(self):
+    assert(True)
+
+
 if __name__ == '__main__':
   unittest.main()
