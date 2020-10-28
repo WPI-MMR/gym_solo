@@ -64,6 +64,6 @@ class RewardFactory:
       strategies earlier.
     """
     if not self._rewards:
-      raise ValueError('Need to register a reward function')
+      raise ValueError('Need to register at least one reward instance')
 
     return sum(wr.weight * wr.reward.compute() for wr in self._rewards)

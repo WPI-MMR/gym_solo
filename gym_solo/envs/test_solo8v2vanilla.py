@@ -2,6 +2,7 @@ import unittest
 from gym_solo.envs import solo8v2vanilla as solo_env
 
 from gym import error, spaces
+from gym_solo.core import rewards
 from parameterized import parameterized
 from unittest import mock
 
@@ -11,9 +12,15 @@ import os
 import pybullet as p
 
 
+class SimpleReward(rewards.Reward):
+  def compute(self):
+    return 1
+
+
 class TestSolo8v2VanillaEnv(unittest.TestCase):
   def setUp(self):
     self.env = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig())
+    self.env.reward_factory.register_reward(1, SimpleReward())
 
   def tearDown(self):
     self.env._close()
@@ -29,6 +36,9 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
   def test_realtime(self, mock_time):
     env = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig(),
                                    realtime=True)
+    env.reward_factory.register_reward(1, SimpleReward())
+
+    env.step(env.action_space.sample())
     self.assertTrue(mock_time.called)
     
   def test_seed(self):
@@ -123,6 +133,14 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     np.testing.assert_array_almost_equal(base_pos, new_pos)
     np.testing.assert_array_almost_equal(base_or, new_or)
 
+  def test_step_no_rewards(self):
+    env = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig())
+    with self.assertRaises(ValueError):
+      env.step(np.zeros(self.env.action_space.shape[0]))
+
+  def test_step_simple_reward(self):
+    obs, reward, done, info = self.env.step(self.env.action_space.sample())
+    self.assertEqual(reward, 1)
 
 if __name__ == '__main__':
   unittest.main()

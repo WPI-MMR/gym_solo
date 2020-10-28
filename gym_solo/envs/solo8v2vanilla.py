@@ -89,9 +89,14 @@ class Solo8VanillaEnv(gym.Env):
     p.removeBody(self.robot)
     self.robot, _ = self._load_robot()
 
-    # Let gravity do it's thing and reset the environment
+    # Let gravity do it's thing and reset the environment deterministically
     for i in range(1000):
-      self.step(self._zero_gains)
+      p.setJointMotorControlArray(self.robot, 
+                                  np.arange(self.action_space.shape[0]),
+                                  p.TORQUE_CONTROL, forces=self._zero_gains,
+                                  positionGains=self._zero_gains, 
+                                  velocityGains=self._zero_gains)
+      p.stepSimulation()
     
     obs_values, _ = self.obs_factory.get_obs()
     return obs_values
