@@ -55,9 +55,15 @@ class RewardFactory:
   def get_reward(self) -> float:
     """Evaluate the current state and get the combined reward.
 
+    Exceptions:
+      ValueError: If get_reward() is called with no registered rewards.
+
     Returns:
       float: The reward from the current state. Note that this reward is a 
       combination of multiple atomic sub-rewards, as explained by the 
       strategies earlier.
     """
+    if not self._rewards:
+      raise ValueError('Need to register a reward function')
+
     return sum(wr.weight * wr.reward.compute() for wr in self._rewards)

@@ -17,6 +17,9 @@ class TestRewardsFactory(unittest.TestCase):
     rf = rewards.RewardFactory()
     self.assertListEqual(rf._rewards, [])
 
+    with self.assertRaises(ValueError):
+      rf.get_reward()
+
   @parameterized.expand([
     ('single', {1: 2.5}, 2.5),
     ('two_happy', {1: 1, 2: 2}, 5),
