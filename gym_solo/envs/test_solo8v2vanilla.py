@@ -1,8 +1,10 @@
 import unittest
 from gym_solo.envs import solo8v2vanilla as solo_env
 
-from gym import error, spaces
+from gym_solo.core.test_obs_factory import CompliantObs
 from gym_solo.core import rewards
+
+from gym import error, spaces
 from parameterized import parameterized
 from unittest import mock
 
@@ -141,6 +143,11 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
   def test_step_simple_reward(self):
     obs, reward, done, info = self.env.step(self.env.action_space.sample())
     self.assertEqual(reward, 1)
+
+  def test_observation_space(self):
+    o = CompliantObs(None)
+    self.env.obs_factory.register_observation(o)
+    self.assertEqual(o.observation_space, self.env.observation_space)
 
 if __name__ == '__main__':
   unittest.main()
