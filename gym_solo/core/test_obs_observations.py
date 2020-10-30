@@ -116,7 +116,6 @@ class TestMotorEncoder(unittest.TestCase):
     dummy_robot_id = 0
 
     mock_num_joints.return_value = num_joints
-    # This has to change with respect to joint index in the for loop
     mock_joint_info.side_effect = [[None, b'FL_HFE'], 
     [None, b'FL_KFE'], [None, b'FL_ANKLE'], [None, b'FR_HFE'], 
     [None, b'FR_KFE'], [None, b'FR_ANKLE'], [None, b'HL_HFE'], 
@@ -130,9 +129,41 @@ class TestMotorEncoder(unittest.TestCase):
     o = obs.MotorEncoder(dummy_robot_id)
     self.assertEqual(o.labels(), ground_truth)
     
+  @mock.patch('pybullet.getJointState', autospec=True)
+  @mock.patch('pybullet.getNumJoints', autospec=True)
+  def test_compute(self, mock_num_joints, mock_joint_state):
+    num_joints = 12
+    dummy_robot_id = 0
 
-  def test_compute(self):
-    pass
+    mock_num_joints.return_value = num_joints
+    
+    # This is real case extracted from pybullet
+    mock_joint_state.side_effect = [
+      (1.5301299626083, 7.554435979113249e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), 
+      (-3.0853209964046426, -1.4807635358886225e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), 
+      (0.0, 0.0, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), 
+      (1.530127327627307, 7.721743189663525e-12, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), 
+      (-3.085315909474513, 1.2383787804023483e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), 
+      (0.0, 0.0, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), 
+      (-1.530132288799807, -1.9996261740838904e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), 
+      (3.0853224548246283, -2.1458507061027347e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), 
+      (0.0, 0.0, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), 
+      (1.5301292310246128, -2.8650758804247376e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), 
+      (-3.0853176193095613, 1.4177090742904175e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), 
+      (0.0, 0.0, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0)]
+    
+    # Build from the mock_joint_state.side_effect value. Refer to
+    # https://docs.google.com/document/d/10sXEhzFRSnvFcl3XxNGhnD4N2SedqwdAvK3dsihxVUA/edit#heading=h.p3s2oveabizm
+    ground_truth = [1.5301299626083, -3.0853209964046426, 0.0,
+      1.530127327627307, -3.085315909474513, 0.0,
+      -1.530132288799807, 3.0853224548246283, 0.0,
+      1.5301292310246128, -3.0853176193095613, 0.0]
+
+    o = obs.MotorEncoder(dummy_robot_id)
+    np.testing.assert_allclose(o.compute(), ground_truth)
+
 
 if __name__ == '__main__':
   unittest.main()
+
+  [(1.5301299626083, 7.554435979113249e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (-3.0853209964046426, -1.4807635358886225e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (0.0, 0.0, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (1.530127327627307, 7.721743189663525e-12, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (-3.085315909474513, 1.2383787804023483e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (0.0, 0.0, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (-1.530132288799807, -1.9996261740838904e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (3.0853224548246283, -2.1458507061027347e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (0.0, 0.0, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (1.5301292310246128, -2.8650758804247376e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (-3.0853176193095613, 1.4177090742904175e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (0.0, 0.0, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0)]
