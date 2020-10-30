@@ -239,13 +239,12 @@ class MotorEncoder(Observation):
     position_min = -572.96 if self._degrees else -10
     position_max = 572.96 if self._degrees else 10
 
-    lower = np.full(num_joints, position_min)
+    lower = np.full(self.num_joints, position_min)
 
-    upper = np.full(num_joints, position_max)      
+    upper = np.full(self.num_joints, position_max)      
 
     return spaces.Box(low=lower, high=upper)
 
-  @property
   def labels(self) -> List[str]:
     """A list of labels corresponding to the observation.
     
@@ -256,7 +255,7 @@ class MotorEncoder(Observation):
       List[str]: Labels, where the index is the same as it's respective 
       observation.
     """
-    labels = [p.getJointInfo(robot_id, joint)[1].decode('UTF-8') 
+    labels = [p.getJointInfo(self.robot, joint)[1].decode('UTF-8') 
               for joint in range(self.num_joints)]
     return labels
 
@@ -266,7 +265,7 @@ class MotorEncoder(Observation):
     Returns:
       solo_types.obs: Specified observation for the current state.
     """
-    joint_values = [p.getJointState(env.robot, 0)[i] 
+    joint_values = [p.getJointState(self.robot, i)[0] 
                     for i in range(self.num_joints)]
     return np.array(joint_values)
     
