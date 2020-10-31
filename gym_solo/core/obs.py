@@ -211,10 +211,6 @@ class TorsoIMU(Observation):
 
 class MotorEncoder(Observation):
   """Get the position of the all the joints
-
-  Attributes:
-    labels (List[str]): The labels associated with the outputted observation
-    robot (int): PyBullet BodyId for the robot.
   """
 
   def __init__(self, body_id: int, degrees: bool = False):
@@ -231,10 +227,12 @@ class MotorEncoder(Observation):
   
   @property
   def observation_space(self) -> spaces.Space:
-    """Get the observation space for the joints
+    """Gets the observation space for the joints
 
     Returns:
-      spaces.Space: The observation space.
+      spaces.Space: The observation space corresponding to (joint1, joint2, 
+      joint3, joint4, joint5, joint6, joint7, joint8, joint9, joint10, joint11,
+      joint12)
     """
     lower = np.array([p.getJointInfo(self.robot, joint)[8]
               for joint in range(self.num_joints)])    
@@ -250,9 +248,6 @@ class MotorEncoder(Observation):
 
   def labels(self) -> List[str]:
     """A list of labels corresponding to the observation.
-    
-    i.e. if the observation was [1, 2, 3], and the labels were ['a', 'b', 'c'],
-    then a = 1, b = 2, c = 3.
 
     Returns:
       List[str]: Labels, where the index is the same as it's respective 
@@ -263,10 +258,11 @@ class MotorEncoder(Observation):
     return labels
 
   def compute(self) -> solo_types.obs:
-    """Compute the motor position values for the current state.
+    """Computes the motor position values all the joints of the robot 
+    for the current state.
 
     Returns:
-      solo_types.obs: Specified observation for the current state.
+      solo_types.obs: The observation extracted from pybullet
     """
     
     joint_values = [p.getJointState(self.robot, i)[0] 
