@@ -68,18 +68,63 @@ class TestTorsoIMU(unittest.TestCase):
 
 class TestMotorEncoder(unittest.TestCase):
 
+  def __init__(self, *args, **kwargs):
+    super(TestMotorEncoder, self).__init__(*args, **kwargs)
+    self.joint_info = [(0, b'FL_HFE', 0, 7, 6, 1, 0.0, 0.0, -10.0, 10.0,
+     1000.0, 1000.0, b'FL_UPPER_LEG', (0.0, 0.9928065522152947, -0.11972948625288478), 
+     (0.19, 0.1046, 0.0), (-0.05997269288895365, 0.0, 0.0, 0.998200018086379), -1), 
+    (1, b'FL_KFE', 0, 8, 7, 1, 0.0, 0.0, -10.0, 10.0, 1000.0, 
+      1000.0, b'FL_LOWER_LEG', (0.0, 0.9996672990385953, -0.025793240061682075), 
+      (-1.377e-05, 0.00822816082925067, -0.08287430545789741), 
+      (0.04709322720802768, 0.0, 0.0, 0.9988904984787538), 0), 
+    (2, b'FL_ANKLE', 4, -1, -1, 0, 0.0, 0.0, -10.0, 10.0, 1000.0, 
+      1000.0, b'FL_FOOT', (0.0, 0.0, 0.0), (0.0, -0.0017005235902268143, 
+      -0.07069750911605854), (0.012897692844160934, 0.0, 0.0, 0.9999168213003008), 1), 
+    (3, b'FR_HFE', 0, 9, 8, 1, 0.0, 0.0, -10.0, 10.0, 1000.0, 
+      1000.0, b'FR_UPPER_LEG', (0.0, 0.9928065522152947, 0.11972948625288478), 
+        (0.19, -0.1046, 0.0), (0.05997269288895365, 0.0, 0.0, 0.998200018086379), -1), 
+    (4, b'FR_KFE', 0, 10, 9, 1, 0.0, 0.0, -10.0, 10.0, 1000.0, 
+      1000.0, b'FR_LOWER_LEG', (0.0, 0.9996672990385953, 0.025793240061682075), 
+      (1.377e-05, -0.00822816082925067, -0.08287430545789741), 
+      (-0.04709322720802768, 0.0, 0.0, 0.9988904984787538), 3), 
+    (5, b'FR_ANKLE', 4, -1, -1, 0, 0.0, 0.0, -10.0, 10.0, 1000.0, 
+      1000.0, b'FR_FOOT', (0.0, 0.0, 0.0), (0.0, -0.014047115411452295, 
+      -0.07110382693156142), (-0.012897692844160934, 0.0, 0.0, 0.9999168213003008), 4), 
+    (6, b'HL_HFE', 0, 11, 10, 1, 0.0, 0.0, -10.0, 10.0, 1000.0, 
+      1000.0, b'HL_UPPER_LEG', (0.0, 0.9928065522152947, -0.11972948625288478), 
+      (-0.19, 0.1046, 0.0), (-0.05997269288895365, 0.0, 0.0, 0.998200018086379), -1), 
+    (7, b'HL_KFE', 0, 12, 11, 1, 0.0, 0.0, -10.0, 10.0, 1000.0, 
+      1000.0, b'HL_LOWER_LEG', (0.0, 0.9996672990385953, -0.025793240061682075), 
+      (-1.377e-05, 0.00822816082925067, -0.08287430545789741), 
+      (0.04709322720802768, 0.0, 0.0, 0.9988904984787538), 6), 
+    (8, b'HL_ANKLE', 4, -1, -1, 0, 0.0, 0.0, -10.0, 10.0, 1000.0, 
+      1000.0, b'HL_FOOT', (0.0, 0.0, 0.0), (0.0, -0.0017005235902268143, 
+      -0.07069750911605854), (0.012897692844160934, 0.0, 0.0, 0.9999168213003008), 7), 
+    (9, b'HR_HFE', 0, 13, 12, 1, 0.0, 0.0, -10.0, 10.0, 1000.0, 
+      1000.0, b'HR_UPPER_LEG', (0.0, 0.9928065522152947, 0.11972948625288478), 
+      (-0.19, -0.1046, 0.0), (0.05997269288895365, 0.0, 0.0, 0.998200018086379), -1), 
+    (10, b'HR_KFE', 0, 14, 13, 1, 0.0, 0.0, -10.0, 10.0, 1000.0, 
+      1000.0, b'HR_LOWER_LEG', (0.0, 0.9996672990385953, 0.025793240061682075), 
+      (1.377e-05, -0.00822816082925067, -0.08287430545789741), 
+      (-0.04709322720802768, 0.0, 0.0, 0.9988904984787538), 9), 
+    (11, b'HR_ANKLE', 4, -1, -1, 0, 0.0, 0.0, -10.0, 10.0, 1000.0, 
+      1000.0, b'HR_FOOT', (0.0, 0.0, 0.0), (0.0, -0.014047115411452295, 
+      -0.07110382693156142), (-0.012897692844160934, 0.0, 0.0, 0.9999168213003008), 10)]
+
+
   @parameterized.expand([
-    ("default", 0, False),
-    ("degrees", 0, True)
+    ("default", False),
+    ("degrees", True)
   ])
   @mock.patch('pybullet.getNumJoints', autospec=True)
-  def test_attributes(self, name, robot_id, degrees, mock_num_joints):
-    num_joints = 11
+  def test_attributes(self, name, degrees, mock_num_joints):
+    num_joints = 12
+    dummy_robot_id = 0
     mock_num_joints.return_value = num_joints
 
-    o = obs.MotorEncoder(robot_id, degrees= degrees)
+    o = obs.MotorEncoder(dummy_robot_id, degrees= degrees)
     
-    self.assertEqual(o.robot, robot_id)
+    self.assertEqual(o.robot, dummy_robot_id)
     self.assertEqual(o._degrees, degrees)
     self.assertEqual(o.num_joints, num_joints)
 
@@ -87,17 +132,23 @@ class TestMotorEncoder(unittest.TestCase):
     ("default", False),
     ("degrees", True)
   ])
+  @mock.patch('pybullet.getJointInfo', autospec=True)
   @mock.patch('pybullet.getNumJoints', autospec=True)
-  def test_observation_space(self, name, degrees, mock_num_joints):
+  def test_observation_space(self, name, degrees, mock_num_joints, mock_joint_info):
+    
+    def joint_info_side_effect(robot, joint):
+      return self.joint_info[joint]
+
     num_joints = 12
     mock_num_joints.return_value = num_joints
+    mock_joint_info.side_effect = joint_info_side_effect
     dummy_robot_id = 0
 
     o = obs.MotorEncoder(dummy_robot_id, degrees= degrees)
 
     if degrees:
-      position_max = 572.96
-      position_min = -572.96
+      position_max = 572.9578
+      position_min = -572.9578
     else:
       position_max = 10
       position_min = -10
@@ -116,11 +167,7 @@ class TestMotorEncoder(unittest.TestCase):
     dummy_robot_id = 0
 
     mock_num_joints.return_value = num_joints
-    mock_joint_info.side_effect = [[None, b'FL_HFE'], 
-    [None, b'FL_KFE'], [None, b'FL_ANKLE'], [None, b'FR_HFE'], 
-    [None, b'FR_KFE'], [None, b'FR_ANKLE'], [None, b'HL_HFE'], 
-    [None, b'HL_KFE'], [None, b'HL_ANKLE'], [None, b'HR_HFE'], 
-    [None, b'HR_KFE'], [None, b'HR_ANKLE']]
+    mock_joint_info.side_effect = self.joint_info
     
     ground_truth = ['FL_HFE', 'FL_KFE', 'FL_ANKLE', 'FR_HFE',
      'FR_KFE', 'FR_ANKLE', 'HL_HFE', 'HL_KFE', 'HL_ANKLE',
@@ -129,14 +176,19 @@ class TestMotorEncoder(unittest.TestCase):
     o = obs.MotorEncoder(dummy_robot_id)
     self.assertEqual(o.labels(), ground_truth)
     
+  
+  @parameterized.expand([
+    ("default", False),
+    ("degrees", True)
+  ])
   @mock.patch('pybullet.getJointState', autospec=True)
   @mock.patch('pybullet.getNumJoints', autospec=True)
-  def test_compute(self, mock_num_joints, mock_joint_state):
+  def test_compute(self, name, degrees, mock_num_joints, mock_joint_state):
     num_joints = 12
     dummy_robot_id = 0
 
     mock_num_joints.return_value = num_joints
-    
+
     # This is real case extracted from pybullet
     mock_joint_state.side_effect = [
       (1.5301299626083, 7.554435979113249e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), 
@@ -152,18 +204,19 @@ class TestMotorEncoder(unittest.TestCase):
       (-3.0853176193095613, 1.4177090742904175e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), 
       (0.0, 0.0, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0)]
     
-    # Build from the mock_joint_state.side_effect value. Refer to
+    # Built from the mock_joint_state.side_effect value. Refer to getJointState return from
     # https://docs.google.com/document/d/10sXEhzFRSnvFcl3XxNGhnD4N2SedqwdAvK3dsihxVUA/edit#heading=h.p3s2oveabizm
     ground_truth = [1.5301299626083, -3.0853209964046426, 0.0,
       1.530127327627307, -3.085315909474513, 0.0,
       -1.530132288799807, 3.0853224548246283, 0.0,
       1.5301292310246128, -3.0853176193095613, 0.0]
 
-    o = obs.MotorEncoder(dummy_robot_id)
+    if degrees:
+      np.multiply(ground_truth, (180/math.pi))
+
+    o = obs.MotorEncoder(dummy_robot_id, degrees= degrees)
     np.testing.assert_allclose(o.compute(), ground_truth)
 
 
 if __name__ == '__main__':
   unittest.main()
-
-  [(1.5301299626083, 7.554435979113249e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (-3.0853209964046426, -1.4807635358886225e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (0.0, 0.0, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (1.530127327627307, 7.721743189663525e-12, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (-3.085315909474513, 1.2383787804023483e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (0.0, 0.0, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (-1.530132288799807, -1.9996261740838904e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (3.0853224548246283, -2.1458507061027347e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (0.0, 0.0, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (1.5301292310246128, -2.8650758804247376e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (-3.0853176193095613, 1.4177090742904175e-11, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0), (0.0, 0.0, (0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0)]

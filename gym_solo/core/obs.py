@@ -236,12 +236,15 @@ class MotorEncoder(Observation):
     Returns:
       spaces.Space: The observation space.
     """
-    position_min = -572.96 if self._degrees else -10
-    position_max = 572.96 if self._degrees else 10
+    lower = np.array([p.getJointInfo(self.robot, joint)[8]
+              for joint in range(self.num_joints)])    
 
-    lower = np.full(self.num_joints, position_min)
+    upper = np.array([p.getJointInfo(self.robot, joint)[9]
+              for joint in range(self.num_joints)])
 
-    upper = np.full(self.num_joints, position_max)      
+    if self._degrees:
+      lower = lower * (180/math.pi)
+      upper = upper * (180/math.pi)
 
     return spaces.Box(low=lower, high=upper)
 
@@ -265,7 +268,12 @@ class MotorEncoder(Observation):
     Returns:
       solo_types.obs: Specified observation for the current state.
     """
+    
     joint_values = [p.getJointState(self.robot, i)[0] 
                     for i in range(self.num_joints)]
+
+    if self._degrees:
+      np.multiply(joint_values, (180/math.pi))
+
     return np.array(joint_values)
     
