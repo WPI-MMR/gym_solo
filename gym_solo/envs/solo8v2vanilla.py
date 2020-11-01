@@ -13,6 +13,8 @@ from gym import error, spaces
 
 from gym_solo.core.configs import Solo8BaseConfig
 from gym_solo.core import obs
+from gym_solo.core import rewards
+
 from gym_solo import solo_types
 
 
@@ -33,6 +35,7 @@ class Solo8VanillaEnv(gym.Env):
     self._config = config
 
     self.obs_factory = obs.ObservationFactory()
+    self.reward_factory = rewards.RewardFactory()
 
     self._client = p.connect(p.GUI if use_gui else p.DIRECT)
     p.setAdditionalSearchPath(pbd.getDataPath())
@@ -72,9 +75,10 @@ class Solo8VanillaEnv(gym.Env):
     if self._realtime:
       time.sleep(self._config.dt)
 
-    # TODO: Fix rewards
     obs_values, obs_labels = self.obs_factory.get_obs()
-    return obs_values, 0.0, False, {'labels': obs_labels}
+    reward = self.reward_factory.get_reward()
+
+    return obs_values, reward, False, {'labels': obs_labels}
 
   def reset(self) -> solo_types.obs:
     """Reset the state of the environment and returns an initial observation.
@@ -85,9 +89,14 @@ class Solo8VanillaEnv(gym.Env):
     p.removeBody(self.robot)
     self.robot, _ = self._load_robot()
 
-    # Let gravity do it's thing and reset the environment
+    # Let gravity do it's thing and reset the environment deterministically
     for i in range(1000):
-      self.step(self._zero_gains)
+      p.setJointMotorControlArray(self.robot, 
+                                  np.arange(self.action_space.shape[0]),
+                                  p.TORQUE_CONTROL, forces=self._zero_gains,
+                                  positionGains=self._zero_gains, 
+                                  velocityGains=self._zero_gains)
+      p.stepSimulation()
     
     obs_values, _ = self.obs_factory.get_obs()
     return obs_values
