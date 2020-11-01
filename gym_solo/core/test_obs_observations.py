@@ -49,7 +49,7 @@ class TestTorsoIMU(unittest.TestCase):
     mock_base.return_value = (None, 
                               [0, 0, 0.707, 0.707])
     mock_vel.return_value = ([30, 60, 90],
-                             [30, 60, 90])
+                              [30, 60, 90])
 
     with self.subTest('degrees'):
       o = obs.TorsoIMU(0, degrees=True)
@@ -70,6 +70,10 @@ class TestMotorEncoder(unittest.TestCase):
 
   def __init__(self, *args, **kwargs):
     super(TestMotorEncoder, self).__init__(*args, **kwargs)
+    
+    # This output is obtained from getJointInfo (pybullet) for all the joints. 
+    # This is only for the solo8vanilla. The output from pybullet is converted
+    # into a list for mockings
     self.joint_info = [(0, b'FL_HFE', 0, 7, 6, 1, 0.0, 0.0, -10.0, 10.0,
      1000.0, 1000.0, b'FL_UPPER_LEG', (0.0, 0.9928065522152947, -0.11972948625288478), 
      (0.19, 0.1046, 0.0), (-0.05997269288895365, 0.0, 0.0, 0.998200018086379), -1), 
@@ -122,11 +126,11 @@ class TestMotorEncoder(unittest.TestCase):
     dummy_robot_id = 0
     mock_num_joints.return_value = num_joints
 
-    o = obs.MotorEncoder(dummy_robot_id, degrees= degrees)
+    o = obs.MotorEncoder(dummy_robot_id, degrees=degrees)
     
     self.assertEqual(o.robot, dummy_robot_id)
     self.assertEqual(o._degrees, degrees)
-    self.assertEqual(o.num_joints, num_joints)
+    self.assertEqual(o._num_joints, num_joints)
 
   @parameterized.expand([
     ("default", False),
@@ -135,30 +139,26 @@ class TestMotorEncoder(unittest.TestCase):
   @mock.patch('pybullet.getJointInfo', autospec=True)
   @mock.patch('pybullet.getNumJoints', autospec=True)
   def test_observation_space(self, name, degrees, mock_num_joints, mock_joint_info):
-    
-    def joint_info_side_effect(robot, joint):
-      return self.joint_info[joint]
 
     num_joints = 12
     mock_num_joints.return_value = num_joints
-    mock_joint_info.side_effect = joint_info_side_effect
+    mock_joint_info.side_effect = lambda robot, joint: self.joint_info[joint]
     dummy_robot_id = 0
 
-    o = obs.MotorEncoder(dummy_robot_id, degrees= degrees)
+    o = obs.MotorEncoder(dummy_robot_id, degrees=degrees)
+
+    position_max = 10
 
     if degrees:
-      position_max = 572.9578
-      position_min = -572.9578
-    else:
-      position_max = 10
-      position_min = -10
+      position_max = np.degrees(position_max)
+    
+    position_min = -position_max  
 
     lower_bound = np.full(num_joints, position_min)
     upper_bound = np.full(num_joints, position_max)   
 
     np.testing.assert_allclose(o.observation_space.low, lower_bound)
     np.testing.assert_allclose(o.observation_space.high, upper_bound)
-
 
   @mock.patch('pybullet.getJointInfo', autospec=True)
   @mock.patch('pybullet.getNumJoints', autospec=True)
@@ -176,7 +176,6 @@ class TestMotorEncoder(unittest.TestCase):
     o = obs.MotorEncoder(dummy_robot_id)
     self.assertEqual(o.labels(), ground_truth)
     
-  
   @parameterized.expand([
     ("default", False),
     ("degrees", True)
@@ -184,10 +183,9 @@ class TestMotorEncoder(unittest.TestCase):
   @mock.patch('pybullet.getJointState', autospec=True)
   @mock.patch('pybullet.getNumJoints', autospec=True)
   def test_compute(self, name, degrees, mock_num_joints, mock_joint_state):
-    num_joints = 12
     dummy_robot_id = 0
 
-    mock_num_joints.return_value = num_joints
+    mock_num_joints.return_value = 12
 
     # This is real case extracted from pybullet
     mock_joint_state.side_effect = [
@@ -212,9 +210,9 @@ class TestMotorEncoder(unittest.TestCase):
       1.5301292310246128, -3.0853176193095613, 0.0]
 
     if degrees:
-      np.multiply(ground_truth, (180/math.pi))
+      ground_truth = np.degrees(ground_truth)
 
-    o = obs.MotorEncoder(dummy_robot_id, degrees= degrees)
+    o = obs.MotorEncoder(dummy_robot_id, degrees=degrees)
     np.testing.assert_allclose(o.compute(), ground_truth)
 
 

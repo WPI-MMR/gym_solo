@@ -44,7 +44,7 @@ class Observation(ABC):
     then a = 1, b = 2, c = 3.
 
     Returns:
-      List[str]: Labels, where the index is the same as it's respective 
+      List[str]: Labels, where the index is the same as its respective 
       observation.
     """
     pass
@@ -223,26 +223,28 @@ class MotorEncoder(Observation):
     """
     self.robot = body_id
     self._degrees = degrees
-    self.num_joints = p.getNumJoints(self.robot)
+    self._num_joints = p.getNumJoints(self.robot)
   
   @property
   def observation_space(self) -> spaces.Space:
     """Gets the observation space for the joints
 
     Returns:
-      spaces.Space: The observation space corresponding to (joint1, joint2, 
-      joint3, joint4, joint5, joint6, joint7, joint8, joint9, joint10, joint11,
-      joint12)
+      spaces.Space: The observation space corresponding to the labels
     """
-    lower = np.array([p.getJointInfo(self.robot, joint)[8]
-              for joint in range(self.num_joints)])    
+    lower, upper = [], []
 
-    upper = np.array([p.getJointInfo(self.robot, joint)[9]
-              for joint in range(self.num_joints)])
+    for joint in range(self._num_joints):
+      joint_info = p.getJointInfo(self.robot, joint)
+      lower.append(joint_info[8])
+      upper.append(joint_info[9])
+
+    lower = np.array(lower)
+    upper = np.array(upper)
 
     if self._degrees:
-      lower = lower * (180/math.pi)
-      upper = upper * (180/math.pi)
+      lower = np.degrees(lower)
+      upper = np.degrees(upper)
 
     return spaces.Box(low=lower, high=upper)
 
@@ -250,12 +252,11 @@ class MotorEncoder(Observation):
     """A list of labels corresponding to the observation.
 
     Returns:
-      List[str]: Labels, where the index is the same as it's respective 
+      List[str]: Labels, where the index is the same as its respective 
       observation.
     """
-    labels = [p.getJointInfo(self.robot, joint)[1].decode('UTF-8') 
-              for joint in range(self.num_joints)]
-    return labels
+    return [p.getJointInfo(self.robot, joint)[1].decode('UTF-8') 
+              for joint in range(self._num_joints)]
 
   def compute(self) -> solo_types.obs:
     """Computes the motor position values all the joints of the robot 
@@ -264,12 +265,11 @@ class MotorEncoder(Observation):
     Returns:
       solo_types.obs: The observation extracted from pybullet
     """
-    
-    joint_values = [p.getJointState(self.robot, i)[0] 
-                    for i in range(self.num_joints)]
+    joint_values = np.array([p.getJointState(self.robot, i)[0] 
+                    for i in range(self._num_joints)])
 
     if self._degrees:
-      np.multiply(joint_values, (180/math.pi))
-
-    return np.array(joint_values)
+      joint_values = np.degrees(joint_values)
+      
+    return joint_values
     
