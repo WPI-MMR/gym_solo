@@ -56,14 +56,15 @@ class TestTorsoIMU(unittest.TestCase):
       np.testing.assert_allclose(o.compute(),
                                  [0, 0, 90,
                                   30, 60, 90,
-                                  30, 60, 90])
+                                  30 * 180 / np.pi, 
+                                    60 * 180 / np.pi, 90* 180 / np.pi])
 
     with self.subTest('radians'):
       o = obs.TorsoIMU(0, degrees=False)
       np.testing.assert_allclose(o.compute(),
                                  [0, 0, 1/2 * np.pi,
                                   30, 60, 90,
-                                  1/6 * np.pi, 1/3 * np.pi, 1/2 * np.pi])
+                                  30, 60, 90])
 
 
 class TestMotorEncoder(unittest.TestCase):

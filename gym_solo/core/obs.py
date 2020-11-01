@@ -202,8 +202,7 @@ class TorsoIMU(Observation):
 
     if self._degrees:
       orien = np.degrees(orien)
-    else:
-      v_ang = np.radians(v_ang)
+      v_ang = np.degrees(v_ang)
 
     return np.concatenate([orien, v_lin, v_ang])
 
