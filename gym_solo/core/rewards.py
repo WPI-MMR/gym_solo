@@ -2,6 +2,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List
 
+import numpy as np
+import pybullet as p
+
 from gym_solo import solo_types
 
 
@@ -67,3 +70,38 @@ class RewardFactory:
       raise ValueError('Need to register at least one reward instance')
 
     return sum(wr.weight * wr.reward.compute() for wr in self._rewards)
+
+
+class UprightReward(Reward):
+  """A reward for being fully upright. Note that this is technically only
+  designed for the Solo8v2Vanilla and should be extended in the future to 
+  support more models.
+
+  The reward's is in the interval [-1, 1], where 1 indicates that the torso
+  is upright, while -1 means that it is upside down. Observe that this means
+  that the reward is orientation-specific.
+  """
+  _fully_upright = -np.pi / 2
+
+  def __init__(self, robot_id: int):
+    """Create a new UprightReward.
+
+    Args:
+      robot_id ([int]): The PyBullet body id of the robot
+    """
+    self._robot_id = robot_id
+
+  def compute(self) -> float:
+    """Compute the UprightReward for the current state. 
+    
+    As this reward function is specifically designed for the solo8v2vanilla 
+    model, this means that the model just needs to be rotated -pi/2 radians 
+    about the y axis.
+
+    Returns:
+      float: A real-valued number in [-1, 1], where 1 means perfectly upright 
+      whilst -1 means that the robot is literally upside down. 
+    """
+    _, quat = p.getBasePositionAndOrientation(self._robot_id)
+    unused_x, y, unused_z = np.array(p.getEulerFromQuaternion(quat))
+    return self._fully_upright * y / self._fully_upright ** 2
