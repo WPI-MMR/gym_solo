@@ -44,7 +44,7 @@ class Observation(ABC):
     then a = 1, b = 2, c = 3.
 
     Returns:
-      List[str]: Labels, where the index is the same as it's respective 
+      List[str]: Labels, where the index is the same as its respective 
       observation.
     """
     pass
@@ -205,3 +205,70 @@ class TorsoIMU(Observation):
       v_ang = np.degrees(v_ang)
 
     return np.concatenate([orien, v_lin, v_ang])
+
+
+
+class MotorEncoder(Observation):
+  """Get the position of the all the joints
+  """
+
+  def __init__(self, body_id: int, degrees: bool = False):
+    """Create a new MotorEncoder observation
+
+    Args:
+      body_id (int): The PyBullet body id for the robot.
+      degrees (bool, optional): Whether or not to return angles in degrees. 
+        Defaults to False.
+    """
+    self.robot = body_id
+    self._degrees = degrees
+    self._num_joints = p.getNumJoints(self.robot)
+  
+  @property
+  def observation_space(self) -> spaces.Space:
+    """Gets the observation space for the joints
+
+    Returns:
+      spaces.Space: The observation space corresponding to the labels
+    """
+    lower, upper = [], []
+
+    for joint in range(self._num_joints):
+      joint_info = p.getJointInfo(self.robot, joint)
+      lower.append(joint_info[8])
+      upper.append(joint_info[9])
+
+    lower = np.array(lower)
+    upper = np.array(upper)
+
+    if self._degrees:
+      lower = np.degrees(lower)
+      upper = np.degrees(upper)
+
+    return spaces.Box(low=lower, high=upper)
+
+  def labels(self) -> List[str]:
+    """A list of labels corresponding to the observation.
+
+    Returns:
+      List[str]: Labels, where the index is the same as its respective 
+      observation.
+    """
+    return [p.getJointInfo(self.robot, joint)[1].decode('UTF-8') 
+              for joint in range(self._num_joints)]
+
+  def compute(self) -> solo_types.obs:
+    """Computes the motor position values all the joints of the robot 
+    for the current state.
+
+    Returns:
+      solo_types.obs: The observation extracted from pybullet
+    """
+    joint_values = np.array([p.getJointState(self.robot, i)[0] 
+                    for i in range(self._num_joints)])
+
+    if self._degrees:
+      joint_values = np.degrees(joint_values)
+      
+    return joint_values
+    
