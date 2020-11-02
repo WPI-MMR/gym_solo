@@ -1,18 +1,11 @@
 import unittest
 from gym_solo.core import rewards
+from gym_solo.testing import ReflectiveReward
 
 from parameterized import parameterized
 from unittest import mock
 
 import numpy as np
-
-
-class TestReward(rewards.Reward):
-  def __init__(self, return_value):
-    self._return_value = return_value
-
-  def compute(self):
-    return self._return_value
 
 
 class TestRewardsFactory(unittest.TestCase):
@@ -33,7 +26,7 @@ class TestRewardsFactory(unittest.TestCase):
   def test_register_and_compute(self, name, rewards_dict, expected_reward):
     rf = rewards.RewardFactory()
     for weight, reward in rewards_dict.items():
-      rf.register_reward(weight, TestReward(reward))
+      rf.register_reward(weight, ReflectiveReward(reward))
     self.assertEqual(rf.get_reward(), expected_reward)
 
 
