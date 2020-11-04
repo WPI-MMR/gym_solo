@@ -35,9 +35,6 @@ class Solo8VanillaEnv(gym.Env):
     self._realtime = realtime
     self._config = config
 
-    self.obs_factory = obs.ObservationFactory()
-    self.reward_factory = rewards.RewardFactory()
-
     self.client = bc.BulletClient(
       connection_mode=p.GUI if use_gui else p.DIRECT)
     self.client.setAdditionalSearchPath(pbd.getDataPath())
@@ -47,6 +44,9 @@ class Solo8VanillaEnv(gym.Env):
 
     self.plane = self.client.loadURDF('plane.urdf')
     self.robot, joint_cnt = self._load_robot()
+
+    self.obs_factory = obs.ObservationFactory(self.client)
+    self.reward_factory = rewards.RewardFactory()
 
     self._zero_gains = np.zeros(joint_cnt)
     self.action_space = spaces.Box(-self._config.motor_torque_limit, 
