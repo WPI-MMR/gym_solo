@@ -12,6 +12,7 @@ import importlib
 import numpy as np
 import os
 import pybullet as p
+import pybullet_utils.bullet_client as bc
 
 
 class SimpleReward(rewards.Reward):
@@ -74,11 +75,11 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     ('nogui', {'use_gui': False}, p.DIRECT),
     ('gui', {'use_gui': True}, p.GUI),
   ])
-  @mock.patch('pybullet.connect')
-  def test_GUI(self, name, kwargs, expected_ui, mock_connect):
+  @mock.patch('pybullet_utils.bullet_client.BulletClient')
+  def test_GUI(self, name, kwargs, expected_ui, mock_client):
     env = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig(),
                                    **kwargs)
-    mock_connect.assert_called_with(expected_ui)
+    mock_client.assert_called_with(connection_mode=expected_ui)
 
   def test_action_space(self):
     limit = 0.5
