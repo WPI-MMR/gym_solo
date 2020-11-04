@@ -84,7 +84,7 @@ class TestTorsoIMU(ObservationBaseTestCase):
                                     60 * 180 / np.pi, 90* 180 / np.pi])
 
     with self.subTest('radians'):
-      o = self.build_obs(0, degrees=True)
+      o = self.build_obs(0, degrees=False)
       np.testing.assert_allclose(o.compute(),
                                  [0, 0, 1/2 * np.pi,
                                   30, 60, 90,
