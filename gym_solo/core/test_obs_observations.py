@@ -200,7 +200,7 @@ class TestMotorEncoder(ObservationBaseTestCase):
      'HR_HFE', 'HR_KFE', 'HR_ANKLE']
 
     o = self.build_obs(dummy_robot_id)
-    self.assertEqual(o.labels(), ground_truth)
+    self.assertEqual(o.labels, ground_truth)
     
   @parameterized.expand([
     ("default", False),
