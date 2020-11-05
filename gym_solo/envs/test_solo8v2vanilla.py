@@ -3,6 +3,7 @@ from gym_solo.envs import solo8v2vanilla as solo_env
 
 from gym_solo.core.test_obs_factory import CompliantObs
 from gym_solo.core import rewards
+from gym_solo.core import obs as solo_obs
 
 from gym import error, spaces
 from parameterized import parameterized
@@ -149,6 +150,22 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     o = CompliantObs(None)
     self.env.obs_factory.register_observation(o)
     self.assertEqual(o.observation_space, self.env.observation_space)
+
+  def test_disjoint_environments(self):
+    env1 = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig())
+    env1.obs_factory.register_observation(solo_obs.TorsoIMU(env1.robot))
+    env1.obs_factory.register_observation(solo_obs.MotorEncoder(env1.robot))
+
+    home_position = env1.reset()
+    
+    for i in range(1000):
+      env1.step(env1.action_space.sample())
+
+    env2 = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig())
+    env2.obs_factory.register_observation(solo_obs.TorsoIMU(env2.robot))
+    env2.obs_factory.register_observation(solo_obs.MotorEncoder(env2.robot))
+
+    np.testing.assert_array_almost_equal(home_position, env2.reset())
 
 if __name__ == '__main__':
   unittest.main()
