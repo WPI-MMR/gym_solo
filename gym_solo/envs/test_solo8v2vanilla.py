@@ -4,6 +4,7 @@ from gym_solo.envs import solo8v2vanilla as solo_env
 from gym_solo.core.test_obs_factory import CompliantObs
 from gym_solo.core import rewards
 from gym_solo.core import obs as solo_obs
+from gym_solo.testing import SimpleReward
 
 from gym import error, spaces
 from parameterized import parameterized
@@ -14,11 +15,6 @@ import numpy as np
 import os
 import pybullet as p
 import pybullet_utils.bullet_client as bc
-
-
-class SimpleReward(rewards.Reward):
-  def compute(self):
-    return 1
 
 
 class TestSolo8v2VanillaEnv(unittest.TestCase):
