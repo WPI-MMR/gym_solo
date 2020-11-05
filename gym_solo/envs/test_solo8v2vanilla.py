@@ -1,9 +1,8 @@
 import unittest
 from gym_solo.envs import solo8v2vanilla as solo_env
 
-from gym_solo.core.test_obs_factory import CompliantObs
-from gym_solo.core import rewards
 from gym_solo.core import obs as solo_obs
+from gym_solo.testing import CompliantObs
 from gym_solo.testing import SimpleReward
 
 from gym import error, spaces
@@ -151,6 +150,7 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     env1 = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig())
     env1.obs_factory.register_observation(solo_obs.TorsoIMU(env1.robot))
     env1.obs_factory.register_observation(solo_obs.MotorEncoder(env1.robot))
+    env1.reward_factory.register_reward(1, SimpleReward())
 
     home_position = env1.reset()
     
@@ -160,6 +160,7 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     env2 = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig())
     env2.obs_factory.register_observation(solo_obs.TorsoIMU(env2.robot))
     env2.obs_factory.register_observation(solo_obs.MotorEncoder(env2.robot))
+    env2.reward_factory.register_reward(1, SimpleReward())
 
     np.testing.assert_array_almost_equal(home_position, env2.reset())
 
