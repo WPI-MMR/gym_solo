@@ -7,7 +7,8 @@ import pkg_resources
 @dataclass
 class Solo8BaseConfig:
   dt: float = 1e-3
-  motor_torque_limit: float = 1.5
+  # Max torque supplied by the motors
+  motor_torque_limit: float = 2
   
   # TODO: Figure out how to lay the robot flat so that it doesn't need to fall
   robot_start_pos: Tuple[float] = (0., 0., 0.5)
