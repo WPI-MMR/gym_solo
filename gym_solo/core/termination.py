@@ -2,22 +2,35 @@ from abc import ABC, abstractmethod
 
 
 class Termination(ABC):
-    @abstractmethod
-    def __init__(self, body_id: int):
-        """This is used to define the termination condition
+  def __init__(self, body_id: int, *args, **kwargs):
+      """This is used to define the termination condition
 
-        Args:
-          body_id (int): PyBullet body id to calculate the termination
-          condition for.
-        """
-        pass
-    
-    @abstractmethod
-    def is_terminated(self) -> bool:
-      """This should implement functionanlity that determines when an episode
-      should terminate
+      Args:
+        body_id (int): PyBullet body id to calculate the termination
+        condition for.
       """
-      pass
+      self.body_id = body_id
+      self.create_args()
+      self.reset()
+  
+  @abstractmethod
+  def create_args(self, *args, **kargs):
+    """Assigns the arguments to class attributes
+    """
+    pass
+
+  @abstractmethod
+  def reset(self):
+    """Resets the state of the termination condition
+    """
+    pass
+
+  @abstractmethod
+  def is_terminated(self) -> bool:
+    """This should implement functionanlity that determines when an episode
+    should terminate
+    """
+    pass
 
 
 class TerminationFactory:
@@ -44,36 +57,35 @@ class TerminationFactory:
     termination conditions and value of _is_or attribute
     """
     if self._use_or:
-      for i in range(len(self._terminations)):
-        if self._terminations[i]:
+      for termination in self._terminations:
+        if termination.is_terminated():
           return True
+      return False
     else:
       raise ValueError('No termination condition other than OR is defined')
+
+  def reset(self):
+    """Resets all the termination conditions stored
+    """
+    for termination in self._terminations:
+      termination.reset()
 
 
 class TimeBasedTermination(Termination):
   """Stratergy to signal end of an episode based on time steps
   """
-  def __init__(self, body_id: int):
-    """Creates a time based termination condition
-    
-    Args:
-      body_id (int): The PyBullet body id for the robot.
-    """
-    self.body_id = body_id
-    self.reset()
-
+  def assign_args(self, max_step_delta: int):
+    self.max_step_delta = max_step_delta
+  
   def reset(self):
-    self.time = 0
-    self.max_time = 100,000
+    self.step_delta = 0
 
   def is_terminated(self) -> bool:
     """
     docstring
     """
-    if self.time > self.max_time:
-      return True
-    self.time += 1
+    self.step_delta += 1
+    return self.step_delta > self.max_step_delta
 
 
    
