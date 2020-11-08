@@ -15,6 +15,10 @@ from gym_solo import solo_types
 
 class Observation(ABC):
   """An observation for a body in the pybullet simulation.
+
+  Attributes:
+    _client: The PyBullet client for the instance. Will be set via a
+      property setter.
   """
   _client: bullet_client.BulletClient = None
 
