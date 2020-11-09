@@ -5,6 +5,7 @@ import numpy as np
 import pkg_resources
 import pybullet as p
 import pybullet_data as pbd
+import pybullet_utils.bullet_client as bc
 import random
 import time
 
@@ -34,16 +35,18 @@ class Solo8VanillaEnv(gym.Env):
     self._realtime = realtime
     self._config = config
 
-    self.obs_factory = obs.ObservationFactory()
-    self.reward_factory = rewards.RewardFactory()
+    self.client = bc.BulletClient(
+      connection_mode=p.GUI if use_gui else p.DIRECT)
+    self.client.setAdditionalSearchPath(pbd.getDataPath())
+    self.client.setGravity(*self._config.gravity)
+    self.client.setPhysicsEngineParameter(fixedTimeStep=self._config.dt, 
+                                          numSubSteps=1)
 
-    self._client = p.connect(p.GUI if use_gui else p.DIRECT)
-    p.setAdditionalSearchPath(pbd.getDataPath())
-    p.setGravity(*self._config.gravity)
-    p.setPhysicsEngineParameter(fixedTimeStep=self._config.dt, numSubSteps=1)
-
-    self.plane = p.loadURDF('plane.urdf')
+    self.plane = self.client.loadURDF('plane.urdf')
     self.robot, joint_cnt = self._load_robot()
+
+    self.obs_factory = obs.ObservationFactory(self.client)
+    self.reward_factory = rewards.RewardFactory()
 
     self._zero_gains = np.zeros(joint_cnt)
     self.action_space = spaces.Box(-self._config.motor_torque_limit, 
@@ -65,12 +68,12 @@ class Solo8VanillaEnv(gym.Env):
         observation, the reward for that step, whether or not the episode 
         terminates, and an info dict for misc diagnostic details.
     """
-    p.setJointMotorControlArray(self.robot, 
+    self.client.setJointMotorControlArray(self.robot, 
                                 np.arange(self.action_space.shape[0]),
                                 p.TORQUE_CONTROL, forces=action,
                                 positionGains=self._zero_gains, 
                                 velocityGains=self._zero_gains)
-    p.stepSimulation()
+    self.client.stepSimulation()
 
     if self._realtime:
       time.sleep(self._config.dt)
@@ -86,17 +89,16 @@ class Solo8VanillaEnv(gym.Env):
     Returns:
       solo_types.obs: The initial observation of the space.
     """
-    p.removeBody(self.robot)
+    self.client.removeBody(self.robot)
     self.robot, _ = self._load_robot()
 
     # Let gravity do it's thing and reset the environment deterministically
     for i in range(1000):
-      p.setJointMotorControlArray(self.robot, 
-                                  np.arange(self.action_space.shape[0]),
-                                  p.TORQUE_CONTROL, forces=self._zero_gains,
-                                  positionGains=self._zero_gains, 
-                                  velocityGains=self._zero_gains)
-      p.stepSimulation()
+      self.client.setJointMotorControlArray(
+        self.robot, np.arange(self.action_space.shape[0]), 
+        p.TORQUE_CONTROL, forces=self._zero_gains, 
+        positionGains=self._zero_gains, velocityGains=self._zero_gains)
+      self.client.stepSimulation()
     
     obs_values, _ = self.obs_factory.get_obs()
     return obs_values
@@ -112,27 +114,29 @@ class Solo8VanillaEnv(gym.Env):
     Returns:
         Tuple[int, int]: the id of the robot object and the number of joints.
     """
-    robot_id = p.loadURDF(
+    robot_id = self.client.loadURDF(
       self._config.urdf, self._config.robot_start_pos, 
-      p.getQuaternionFromEuler(self._config.robot_start_orientation_euler),
+      self.client.getQuaternionFromEuler(
+        self._config.robot_start_orientation_euler),
       flags=p.URDF_USE_INERTIA_FROM_FILE, useFixedBase=False)
 
-    joint_cnt = p.getNumJoints(robot_id)
-    p.setJointMotorControlArray(robot_id, np.arange(joint_cnt),
-                                p.VELOCITY_CONTROL, forces=np.zeros(joint_cnt))
+    joint_cnt = self.client.getNumJoints(robot_id)
+    self.client.setJointMotorControlArray(robot_id, np.arange(joint_cnt),
+                                          p.VELOCITY_CONTROL, 
+                                          forces=np.zeros(joint_cnt))
 
     for joint in range(joint_cnt):
-      p.changeDynamics(robot_id, joint, 
-                       linearDamping=self._config.linear_damping,
-                       angularDamping=self._config.angular_damping,
-                       restitution=self._config.restitution,
-                       lateralFriction=self._config.lateral_friction)
+      self.client.changeDynamics(robot_id, joint, 
+                                 linearDamping=self._config.linear_damping, 
+                                 angularDamping=self._config.angular_damping, 
+                                 restitution=self._config.restitution, 
+                                 lateralFriction=self._config.lateral_friction)
 
     return robot_id, joint_cnt
 
   def _close(self) -> None:
     """Soft shutdown the environment. """
-    p.disconnect()
+    self.client.disconnect()
 
   def _seed(self, seed: int) -> None:
     """Set the seeds for random and numpy

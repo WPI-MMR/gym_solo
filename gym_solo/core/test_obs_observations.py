@@ -1,20 +1,44 @@
 import unittest
 from gym_solo.core import obs
 
+from abc import ABC, abstractmethod
 from parameterized import parameterized
+from pybullet_utils import bullet_client
 from unittest import mock
 
-import numpy as np
 import math
+import numpy as np
+import pybullet as p
 
 
-class TestTorsoIMU(unittest.TestCase):
+class ObservationBaseTestCase(unittest.TestCase, ABC):
+  @property
+  @abstractmethod
+  def obs_cls(self):
+    """The observation class to instantiate."""
+    pass
+
+  def setUp(self):
+    self.client = bullet_client.BulletClient(connection_mode=p.DIRECT)
+
+  def tearDown(self):
+    self.client.disconnect()
+
+  def build_obs(self, *args, **kwargs):
+    o = self.obs_cls(*args, **kwargs)
+    o.client = self.client
+    return o
+
+
+class TestTorsoIMU(ObservationBaseTestCase):
+  obs_cls = obs.TorsoIMU
+
   @parameterized.expand([
     ('default', 0, False),
     ('degrees', 1, True)
   ])
   def test_attributes(self, name, robot_id, degrees):
-    o = obs.TorsoIMU(robot_id, degrees=degrees)
+    o = self.build_obs(robot_id, degrees=degrees)
     self.assertEqual(o.robot, robot_id)
     self.assertEqual(o._degrees, degrees)
 
@@ -23,7 +47,7 @@ class TestTorsoIMU(unittest.TestCase):
     ('radians', -np.pi, np.pi)
   ])
   def test_bounds(self, name, angle_min, angle_max):
-    o = obs.TorsoIMU(0, name == 'degrees')
+    o = self.build_obs(0, degrees=(name=='degrees'))
 
     angles = {'θx', 'θy', 'θz'}
     space_len = len(o.labels)
@@ -43,8 +67,8 @@ class TestTorsoIMU(unittest.TestCase):
     # https://github.com/openai/gym/blob/master/gym/spaces/box.py#L66-L67
     self.assertFalse(o.observation_space.is_bounded())
 
-  @mock.patch('pybullet.getBasePositionAndOrientation', autospec=True)
-  @mock.patch('pybullet.getBaseVelocity', autospec=True)
+  @mock.patch('pybullet.getBasePositionAndOrientation')
+  @mock.patch('pybullet.getBaseVelocity')
   def test_compute(self, mock_vel, mock_base):
     mock_base.return_value = (None, 
                               [0, 0, 0.707, 0.707])
@@ -52,7 +76,7 @@ class TestTorsoIMU(unittest.TestCase):
                               [30, 60, 90])
 
     with self.subTest('degrees'):
-      o = obs.TorsoIMU(0, degrees=True)
+      o = self.build_obs(0, degrees=True)
       np.testing.assert_allclose(o.compute(),
                                  [0, 0, 90,
                                   30, 60, 90,
@@ -60,14 +84,15 @@ class TestTorsoIMU(unittest.TestCase):
                                     60 * 180 / np.pi, 90* 180 / np.pi])
 
     with self.subTest('radians'):
-      o = obs.TorsoIMU(0, degrees=False)
+      o = self.build_obs(0, degrees=False)
       np.testing.assert_allclose(o.compute(),
                                  [0, 0, 1/2 * np.pi,
                                   30, 60, 90,
                                   30, 60, 90])
 
 
-class TestMotorEncoder(unittest.TestCase):
+class TestMotorEncoder(ObservationBaseTestCase):
+  obs_cls = obs.MotorEncoder
 
   def __init__(self, *args, **kwargs):
     super(TestMotorEncoder, self).__init__(*args, **kwargs)
@@ -121,13 +146,13 @@ class TestMotorEncoder(unittest.TestCase):
     ("default", False),
     ("degrees", True)
   ])
-  @mock.patch('pybullet.getNumJoints', autospec=True)
+  @mock.patch('pybullet.getNumJoints')
   def test_attributes(self, name, degrees, mock_num_joints):
     num_joints = 12
     dummy_robot_id = 0
     mock_num_joints.return_value = num_joints
 
-    o = obs.MotorEncoder(dummy_robot_id, degrees=degrees)
+    o = self.build_obs(dummy_robot_id, degrees=degrees)
     
     self.assertEqual(o.robot, dummy_robot_id)
     self.assertEqual(o._degrees, degrees)
@@ -137,8 +162,8 @@ class TestMotorEncoder(unittest.TestCase):
     ("default", False),
     ("degrees", True)
   ])
-  @mock.patch('pybullet.getJointInfo', autospec=True)
-  @mock.patch('pybullet.getNumJoints', autospec=True)
+  @mock.patch('pybullet.getJointInfo')
+  @mock.patch('pybullet.getNumJoints')
   def test_observation_space(self, name, degrees, mock_num_joints, mock_joint_info):
 
     num_joints = 12
@@ -146,7 +171,7 @@ class TestMotorEncoder(unittest.TestCase):
     mock_joint_info.side_effect = lambda robot, joint: self.joint_info[joint]
     dummy_robot_id = 0
 
-    o = obs.MotorEncoder(dummy_robot_id, degrees=degrees)
+    o = self.build_obs(dummy_robot_id, degrees=degrees)
 
     position_max = 10
 
@@ -161,8 +186,8 @@ class TestMotorEncoder(unittest.TestCase):
     np.testing.assert_allclose(o.observation_space.low, lower_bound)
     np.testing.assert_allclose(o.observation_space.high, upper_bound)
 
-  @mock.patch('pybullet.getJointInfo', autospec=True)
-  @mock.patch('pybullet.getNumJoints', autospec=True)
+  @mock.patch('pybullet.getJointInfo')
+  @mock.patch('pybullet.getNumJoints')
   def test_labels(self, mock_num_joints, mock_joint_info):
     num_joints = 12
     dummy_robot_id = 0
@@ -174,15 +199,15 @@ class TestMotorEncoder(unittest.TestCase):
      'FR_KFE', 'FR_ANKLE', 'HL_HFE', 'HL_KFE', 'HL_ANKLE',
      'HR_HFE', 'HR_KFE', 'HR_ANKLE']
 
-    o = obs.MotorEncoder(dummy_robot_id)
-    self.assertEqual(o.labels(), ground_truth)
+    o = self.build_obs(dummy_robot_id)
+    self.assertEqual(o.labels, ground_truth)
     
   @parameterized.expand([
     ("default", False),
     ("degrees", True)
   ])
-  @mock.patch('pybullet.getJointState', autospec=True)
-  @mock.patch('pybullet.getNumJoints', autospec=True)
+  @mock.patch('pybullet.getJointState')
+  @mock.patch('pybullet.getNumJoints')
   def test_compute(self, name, degrees, mock_num_joints, mock_joint_state):
     dummy_robot_id = 0
 
@@ -213,7 +238,7 @@ class TestMotorEncoder(unittest.TestCase):
     if degrees:
       ground_truth = np.degrees(ground_truth)
 
-    o = obs.MotorEncoder(dummy_robot_id, degrees=degrees)
+    o = self.build_obs(dummy_robot_id, degrees=degrees)
     np.testing.assert_allclose(o.compute(), ground_truth)
 
 
