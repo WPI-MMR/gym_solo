@@ -2,23 +2,6 @@ from abc import ABC, abstractmethod
 
 
 class Termination(ABC):
-  def __init__(self, body_id: int, *args, **kwargs):
-      """This is used to define the termination condition
-
-      Args:
-        body_id (int): PyBullet body id to calculate the termination
-        condition for.
-      """
-      self.body_id = body_id
-      self.create_args()
-      self.reset()
-  
-  @abstractmethod
-  def create_args(self, *args, **kargs):
-    """Assigns the arguments to class attributes
-    """
-    pass
-
   @abstractmethod
   def reset(self):
     """Resets the state of the termination condition
@@ -42,15 +25,16 @@ class TerminationFactory:
     self._terminations = []
     self._use_or = True
 
-  def register_termination(self, term: Termination):
-    """Add a termination condittion used to evaluate when an episode
+  def register_termination(self, *terminations):
+    """Add a termination condition used to evaluate when an episode
     has ended.
 
     Args:
       term (Termination): Termination condition used to signal the 
       end of an episode 
     """
-    self._terminations.append(term)
+    for termination in terminations:
+      self._terminations.append(termination)
 
   def is_terminated(self) -> bool:
     """Tells whether an episode is terminated based on the registered
@@ -72,17 +56,19 @@ class TerminationFactory:
 
 
 class TimeBasedTermination(Termination):
-  """Stratergy to signal end of an episode based on time steps
+  """The episode terminated when the step_delta becomes greater than
+  max_step_delta
   """
-  def assign_args(self, max_step_delta: int):
+  def __init__(self, max_step_delta: int):
     self.max_step_delta = max_step_delta
+    self.reset()
   
   def reset(self):
     self.step_delta = 0
 
   def is_terminated(self) -> bool:
-    """
-    docstring
+    """Return true when tep_delta becomes greater than max_step_delta.
+    Otherwise return false.
     """
     self.step_delta += 1
     return self.step_delta > self.max_step_delta
