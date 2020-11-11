@@ -1,7 +1,7 @@
 import unittest
 from gym_solo.core import termination
 
-class TimeBasedTermination(unittest.TestCase):
+class TestTimeBasedTermination(unittest.TestCase):
     def test_attributes(self):
       max_step_delta = 3
       term = termination.TimeBasedTermination(max_step_delta)

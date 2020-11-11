@@ -26,27 +26,28 @@ class TerminationFactory:
     self._use_or = True
 
   def register_termination(self, *terminations):
-    """Add a termination condition used to evaluate when an episode
+    """Add termination conditions used to evaluate when an episode
     has ended.
 
     Args:
-      term (Termination): Termination condition used to signal the 
+      terminations (Termination): Termination condition(s) used to signal the 
       end of an episode 
     """
-    for termination in terminations:
-      self._terminations.append(termination)
+    self._terminations.extend(terminations)
 
   def is_terminated(self) -> bool:
     """Tells whether an episode is terminated based on the registered
     termination conditions and value of _is_or attribute
     """
-    if self._use_or:
-      for termination in self._terminations:
-        if termination.is_terminated():
-          return True
-      return False
-    else:
+    
+    if not self._use_or:
       raise ValueError('No termination condition other than OR is defined')
+
+    for termination in self._terminations:
+      if termination.is_terminated():
+        return True
+    
+    return False
 
   def reset(self):
     """Resets all the termination conditions stored
@@ -60,10 +61,15 @@ class TimeBasedTermination(Termination):
   max_step_delta
   """
   def __init__(self, max_step_delta: int):
+    """Initializing TimeBasedTermination
+    """
     self.max_step_delta = max_step_delta
     self.reset()
   
   def reset(self):
+    """Resetting the stepping counter to 0. Usually would happen at the instance
+    creation or when the termination condition has been met
+    """
     self.step_delta = 0
 
   def is_terminated(self) -> bool:
@@ -71,7 +77,4 @@ class TimeBasedTermination(Termination):
     Otherwise return false.
     """
     self.step_delta += 1
-    return self.step_delta > self.max_step_delta
-
-
-   
+    return self.step_delta > self.max_step_delta 
