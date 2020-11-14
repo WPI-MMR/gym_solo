@@ -13,7 +13,7 @@ class TestTimeBasedTermination(unittest.TestCase):
       term = termination.TimeBasedTermination(max_step_delta)
 
       for i in range(max_step_delta):
-        term.is_terminated()
+        self.assertFalse(term.is_terminated())
 
       term.reset()
       self.assertEqual(0,term.step_delta)

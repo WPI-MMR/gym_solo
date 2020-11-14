@@ -62,6 +62,9 @@ class TimeBasedTermination(Termination):
   """
   def __init__(self, max_step_delta: int):
     """Initializing TimeBasedTermination
+    Args:
+      max_step_delta (int): To specify the number of steps that a episode is 
+      made of
     """
     self.max_step_delta = max_step_delta
     self.reset()
@@ -73,7 +76,7 @@ class TimeBasedTermination(Termination):
     self.step_delta = 0
 
   def is_terminated(self) -> bool:
-    """Return true when tep_delta becomes greater than max_step_delta.
+    """Return true when step_delta becomes greater than max_step_delta.
     Otherwise return false.
     """
     self.step_delta += 1

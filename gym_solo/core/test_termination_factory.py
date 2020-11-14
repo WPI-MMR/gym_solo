@@ -15,10 +15,11 @@ class DummyTermination(termination.Termination):
   def is_terminated(self) -> bool:
     return self.termination_var
 
+
 class TestTerminationFactory(unittest.TestCase):
   def test_initialization(self):
     termination_factory = termination.TerminationFactory()
-    self.assertFalse(termination_factory._terminations)
+    self.assertListEqual(termination_factory._terminations, [])
     self.assertTrue(termination_factory._use_or)
 
   def test_register_termination(self):
