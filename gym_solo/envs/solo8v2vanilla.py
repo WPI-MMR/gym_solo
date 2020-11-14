@@ -81,6 +81,8 @@ class Solo8VanillaEnv(gym.Env):
     obs_values, obs_labels = self.obs_factory.get_obs()
     reward = self.reward_factory.get_reward()
 
+    # TODO: The termination is always being returned false.
+    # This would change with termination factory
     return obs_values, reward, False, {'labels': obs_labels}
 
   def reset(self) -> solo_types.obs:
@@ -92,6 +94,7 @@ class Solo8VanillaEnv(gym.Env):
     self.client.removeBody(self.robot)
     self.robot, _ = self._load_robot()
 
+    # TODO: We need to change this to have the robot always be in home position
     # Let gravity do it's thing and reset the environment deterministically
     for i in range(1000):
       self.client.setJointMotorControlArray(
