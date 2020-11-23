@@ -15,6 +15,7 @@ from gym import error, spaces
 from gym_solo.core.configs import Solo8BaseConfig
 from gym_solo.core import obs
 from gym_solo.core import rewards
+from gym_solo.core import termination as terms
 
 from gym_solo import solo_types
 
@@ -47,6 +48,7 @@ class Solo8VanillaEnv(gym.Env):
 
     self.obs_factory = obs.ObservationFactory(self.client)
     self.reward_factory = rewards.RewardFactory()
+    self.termination_factory = terms.TerminationFactory()
 
     self._zero_gains = np.zeros(joint_cnt)
     self.action_space = spaces.Box(-self._config.motor_torque_limit, 
@@ -81,9 +83,10 @@ class Solo8VanillaEnv(gym.Env):
     obs_values, obs_labels = self.obs_factory.get_obs()
     reward = self.reward_factory.get_reward()
 
-    # TODO: The termination is always being returned false.
-    # This would change with termination factory
-    return obs_values, reward, False, {'labels': obs_labels}
+    # TODO: Write tests for this call
+    done = self.termination_factory.is_terminated()
+
+    return obs_values, reward, done, {'labels': obs_labels}
 
   def reset(self) -> solo_types.obs:
     """Reset the state of the environment and returns an initial observation.
