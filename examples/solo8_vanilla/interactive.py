@@ -9,12 +9,15 @@ import numpy as np
 
 import gym_solo
 from gym_solo.envs import solo8v2vanilla
+from gym_solo.core import rewards
 
 
 if __name__ == '__main__':
   config = solo8v2vanilla.Solo8VanillaConfig()
   env = gym.make('solo8vanilla-v0', use_gui=True, realtime=True, config=config)
 
+  env.reward_factory.register_reward(1,rewards.UprightReward(env.robot))
+  
   try:
     print("""\n
           =========================

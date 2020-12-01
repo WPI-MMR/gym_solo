@@ -10,6 +10,7 @@ import numpy as np
 import gym_solo
 from gym_solo.envs import solo8v2vanilla
 from gym_solo.core import obs
+from gym_solo.core import rewards
 
 
 if __name__ == '__main__':
@@ -17,6 +18,7 @@ if __name__ == '__main__':
   env = gym.make('solo8vanilla-v0', use_gui=True, realtime=True, config=config)
 
   env.obs_factory.register_observation(obs.TorsoIMU(env.robot))
+  env.reward_factory.register_reward(1,rewards.UprightReward(env.robot))
 
   try:
     print("""\n
