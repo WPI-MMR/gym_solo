@@ -40,8 +40,8 @@ class TerminationFactory:
     termination conditions and value of _is_or attribute
     """
     
-    if not self._use_or:
-      raise ValueError('No termination condition other than OR is defined')
+    if not self._terminations:
+      raise ValueError('Need to register at least one termination instance')
 
     for termination in self._terminations:
       if termination.is_terminated():

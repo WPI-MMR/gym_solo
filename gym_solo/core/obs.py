@@ -134,7 +134,7 @@ class ObservationFactory:
         i-th observation.
     """
     if not self._observations:
-      return np.empty(shape=(0,)), []
+      raise ValueError('Need to register at least one observation instance')
 
     all_obs = [] 
     all_labels = []
