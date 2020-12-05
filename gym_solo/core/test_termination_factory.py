@@ -1,19 +1,6 @@
 import unittest
 from gym_solo.core import termination
-
-# TODO: Move this to gym_solo.testing
-class DummyTermination(termination.Termination):
-  def __init__(self, body_id: int, termination_var: bool):
-    self.body_id = body_id
-    self.termination_var = termination_var
-    self.reset_counter = 0
-    self.reset()
-    
-  def reset(self):
-    self.reset_counter += 1
-
-  def is_terminated(self) -> bool:
-    return self.termination_var
+from gym_solo.testing import DummyTermination
 
 
 class TestTerminationFactory(unittest.TestCase):

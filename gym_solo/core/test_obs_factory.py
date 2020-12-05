@@ -22,9 +22,8 @@ class TestObservationFactory(unittest.TestCase):
     self.assertFalse(of._observations)
     self.assertIsNone(of._obs_space)
 
-    observations, labels = of.get_obs()
-    self.assertEqual(observations.size, 0)
-    self.assertFalse(labels)
+    with self.assertRaises(ValueError):
+      observations, labels = of.get_obs()
 
   def test_register_happy(self):
     of = obs.ObservationFactory(self.client)
@@ -70,10 +69,9 @@ class TestObservationFactory(unittest.TestCase):
 
   def test_get_obs_no_observations(self):
     of = obs.ObservationFactory(self.client)
-    observations, labels = of.get_obs()
     
-    np.testing.assert_array_equal(observations, np.empty(shape=(0,)))
-    self.assertFalse(labels)
+    with self.assertRaises(ValueError):
+      observations, labels = of.get_obs()
 
   def test_get_obs_single_observation(self):
     of = obs.ObservationFactory(self.client)

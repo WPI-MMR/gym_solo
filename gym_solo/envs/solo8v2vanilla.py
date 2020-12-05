@@ -55,7 +55,7 @@ class Solo8VanillaEnv(gym.Env):
                                    self._config.motor_torque_limit,
                                    shape=(joint_cnt,))
     
-    self.reset()
+    self.reset(init_call=True)
 
   def step(self, action: List[float]) -> Tuple[solo_types.obs, float, bool, 
                                                 Dict[Any, Any]]:
@@ -88,7 +88,7 @@ class Solo8VanillaEnv(gym.Env):
 
     return obs_values, reward, done, {'labels': obs_labels}
 
-  def reset(self) -> solo_types.obs:
+  def reset(self, init_call: bool = False) -> solo_types.obs:
     """Reset the state of the environment and returns an initial observation.
     
     Returns:
@@ -106,8 +106,11 @@ class Solo8VanillaEnv(gym.Env):
         positionGains=self._zero_gains, velocityGains=self._zero_gains)
       self.client.stepSimulation()
     
-    obs_values, _ = self.obs_factory.get_obs()
-    return obs_values
+    if init_call:
+      return np.empty(shape=(0,)), []
+    else:
+      obs_values, _ = self.obs_factory.get_obs()
+      return obs_values
   
   @property
   def observation_space(self):
