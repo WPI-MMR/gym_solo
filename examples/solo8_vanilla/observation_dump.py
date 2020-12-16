@@ -11,6 +11,7 @@ import gym_solo
 from gym_solo.envs import solo8v2vanilla
 from gym_solo.core import obs
 from gym_solo.core import rewards
+from gym_solo.core import termination as terms
 
 
 if __name__ == '__main__':
@@ -19,6 +20,8 @@ if __name__ == '__main__':
 
   env.obs_factory.register_observation(obs.TorsoIMU(env.robot))
   env.reward_factory.register_reward(1,rewards.UprightReward(env.robot))
+  env.termination_factory.register_termination(
+    terms.TimeBasedTermination(100000000))
 
   try:
     print("""\n
