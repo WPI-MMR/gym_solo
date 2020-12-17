@@ -47,7 +47,7 @@ class Solo8VanillaEnv(gym.Env):
     self.robot, joint_cnt = self._load_robot()
 
     self.obs_factory = obs.ObservationFactory(self.client)
-    self.reward_factory = rewards.RewardFactory()
+    self.reward_factory = rewards.RewardFactory(self.client)
     self.termination_factory = terms.TerminationFactory()
 
     self._zero_gains = np.zeros(joint_cnt)
