@@ -37,7 +37,7 @@ class Reward(ABC):
     Returns:
       bullet_client.BulletClient: The active client for the reward.
     """
-    if not self._client:
+    if self._client is None:
       raise ValueError('PyBullet client needs to be set')
     return self._client
 
@@ -141,8 +141,8 @@ class UprightReward(Reward):
       float: A real-valued number in [-1, 1], where 1 means perfectly upright 
       whilst -1 means that the robot is literally upside down. 
     """
-    _, quat = p.getBasePositionAndOrientation(self._robot_id)
-    unused_x, y, unused_z = np.array(p.getEulerFromQuaternion(quat))
+    _, quat = self.client.getBasePositionAndOrientation(self._robot_id)
+    unused_x, y, unused_z = np.array(self.client.getEulerFromQuaternion(quat))
     return self._fully_upright * y / self._fully_upright ** 2
 
 
@@ -172,9 +172,10 @@ class HomePositionReward(Reward):
     Returns:
       float: A real-valued in [0, 1], where 1 is in the home position.
     """
-    (unused_x, unused_y, z), quat = p.getBasePositionAndOrientation(
+    (unused_x, unused_y, z), quat = self.client.getBasePositionAndOrientation(
       self._robot_id)
-    theta_x, theta_y, unused_z = np.array(p.getEulerFromQuaternion(quat))
+    theta_x, theta_y, unused_z = np.array(
+      self.client.getEulerFromQuaternion(quat))
 
     x_reward = self._max_angle - abs(theta_x)
     y_reward = self._max_angle - abs(theta_y)
@@ -182,4 +183,6 @@ class HomePositionReward(Reward):
     orientation_reward = (x_reward + y_reward) / (2 * self._max_angle)
     height_reward = z / self._quad_standing_height
     
+    # Currently magic numbers for the relative weighting--will probably need
+    # to be tuned down the line
     return 0.25 * orientation_reward + 0.75 * height_reward
