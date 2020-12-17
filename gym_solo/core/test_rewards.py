@@ -49,6 +49,13 @@ class TestRewardsFactory(unittest.TestCase):
     client.disconnect()
 
 
+class TestRewardInterface(unittest.TestCase):
+  def test_no_client(self):
+    r = ReflectiveReward(0)
+    with self.assertRaises(ValueError):
+      r.client
+
+
 class RewardBaseTestCase(unittest.TestCase):
   def setUp(self):
     self.client = bullet_client.BulletClient(connection_mode=p.DIRECT)
