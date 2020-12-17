@@ -72,8 +72,13 @@ class RewardFactory:
   temporal decay), then it's probably in your best interest to implement that
   in a custom Reward.
   """
-  def __init__(self):
-    """Create a new RewardFactory."""
+  def __init__(self, client: bullet_client.BulletClient):
+    """Create a new RewardFactory.
+    
+    Args:
+      client (bullet_client.BulletClient): Sandboxed Pybullet client.
+    """
+    self._client = client
     self._rewards: List[_WeightedReward] = []
 
   def register_reward(self, weight: float, reward: Reward):
@@ -86,6 +91,7 @@ class RewardFactory:
       reward (Reward): A Reward object which .compute() will be called on at
         reward computation time.
     """
+    reward.client = self._client
     self._rewards.append(_WeightedReward(reward=reward, weight=weight))
 
   def get_reward(self) -> float:
