@@ -10,7 +10,7 @@ class Termination(ABC):
 
   @abstractmethod
   def is_terminated(self) -> bool:
-    """This should implement functionanlity that determines when an episode
+    """This should implement functionality that determines when an episode
     should terminate
     """
     pass
