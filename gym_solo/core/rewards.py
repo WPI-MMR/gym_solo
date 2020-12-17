@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from pybullet_utils import bullet_client
 from typing import List
 
 import numpy as np
@@ -9,6 +10,14 @@ from gym_solo import solo_types
 
 
 class Reward(ABC):  
+  """A reward for a body in a pybullet simulation.
+
+  Attributes:
+    _client: The PyBullet client for the instance. Will be set via a
+      property setter.
+  """
+  _client: bullet_client.BulletClient = None
+
   @abstractmethod
   def compute(self) -> solo_types.reward:
     """Compute the reward for the current state.
@@ -17,6 +26,30 @@ class Reward(ABC):
       solo_types.reward: The reward evalulated at the current state.
     """
     pass
+
+  @property
+  def client(self) -> bullet_client.BulletClient:
+    """Get the reward's physics client.
+
+    Raises:
+      ValueError: If the PyBullet client hasn't been set yet.
+
+    Returns:
+      bullet_client.BulletClient: The active client for the reward.
+    """
+    if not self._client:
+      raise ValueError('PyBullet client needs to be set')
+    return self._client
+
+  @client.setter
+  def client(self, client: bullet_client.BulletClient):
+    """Set the reward's physics client.
+
+    Args:
+      client (bullet_client.BulletClient): The client to use for the 
+        reward.
+    """
+    self._client = client
 
 
 @dataclass
