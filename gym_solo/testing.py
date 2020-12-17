@@ -1,5 +1,6 @@
 from gym_solo.core import obs
 from gym_solo.core import rewards
+from gym_solo.core import termination
 
 from gym import spaces
 import numpy as np
@@ -63,3 +64,17 @@ class ReflectiveReward(rewards.Reward):
       float: the configured reward.
     """
     return self._return_value
+
+
+class DummyTermination(termination.Termination):
+  def __init__(self, body_id: int, termination_var: bool):
+    self.body_id = body_id
+    self.termination_var = termination_var
+    self.reset_counter = 0
+    self.reset()
+    
+  def reset(self):
+    self.reset_counter += 1
+
+  def is_terminated(self) -> bool:
+    return self.termination_var

@@ -3,22 +3,30 @@ from gym_solo.core import obs
 from gym_solo.testing import CompliantObs
 
 from gym import spaces
+from pybullet_utils import bullet_client
+
 import numpy as np
+import pybullet as p
 
 
 class TestObservationFactory(unittest.TestCase):
+  def setUp(self):
+    self.client = bullet_client.BulletClient(connection_mode=p.DIRECT)
+
+  def tearDown(self):
+    self.client.disconnect()
+
   def test_empty(self):
-    of = obs.ObservationFactory()
+    of = obs.ObservationFactory(self.client)
 
     self.assertFalse(of._observations)
     self.assertIsNone(of._obs_space)
 
-    observations, labels = of.get_obs()
-    self.assertEqual(observations.size, 0)
-    self.assertFalse(labels)
+    with self.assertRaises(ValueError):
+      observations, labels = of.get_obs()
 
   def test_register_happy(self):
-    of = obs.ObservationFactory()
+    of = obs.ObservationFactory(self.client)
 
     with self.subTest('single obs'):
       test_obs = CompliantObs(None)
@@ -46,7 +54,7 @@ class TestObservationFactory(unittest.TestCase):
                         spaces.Box(low=0, high=3, shape=(4,)))
 
   def test_register_mismatch(self):
-    of = obs.ObservationFactory()
+    of = obs.ObservationFactory(self.client)
     test_obs = CompliantObs(None)
     
     with self.subTest('obs_space mismatch'):
@@ -60,14 +68,13 @@ class TestObservationFactory(unittest.TestCase):
         of.register_observation(test_obs)
 
   def test_get_obs_no_observations(self):
-    of = obs.ObservationFactory()
-    observations, labels = of.get_obs()
+    of = obs.ObservationFactory(self.client)
     
-    np.testing.assert_array_equal(observations, np.empty(shape=(0,)))
-    self.assertFalse(labels)
+    with self.assertRaises(ValueError):
+      observations, labels = of.get_obs()
 
   def test_get_obs_single_observation(self):
-    of = obs.ObservationFactory()
+    of = obs.ObservationFactory(self.client)
     of.register_observation(CompliantObs(None))
 
     observations, labels = of.get_obs()
@@ -77,7 +84,7 @@ class TestObservationFactory(unittest.TestCase):
     self.assertListEqual(labels, ['1', '2'])
 
   def test_get_obs_multiple_observations(self):
-    of = obs.ObservationFactory()
+    of = obs.ObservationFactory(self.client)
     of.register_observation(CompliantObs(None))
 
     test_obs = CompliantObs(None)
@@ -92,12 +99,12 @@ class TestObservationFactory(unittest.TestCase):
     self.assertListEqual(labels, ['1', '2', '5', '6'])
 
   def test_get_observation_space_no_observations(self):
-    of = obs.ObservationFactory()
+    of = obs.ObservationFactory(self.client)
     with self.assertRaises(ValueError):
       of.get_observation_space()
 
   def test_get_observation_space_single_observation(self):
-    of = obs.ObservationFactory()
+    of = obs.ObservationFactory(self.client)
 
     test_obs = CompliantObs(None)
     of.register_observation(test_obs)
@@ -118,7 +125,7 @@ class TestObservationFactory(unittest.TestCase):
                        test_obs.observation_space)
 
   def test_get_observation_space_multiple_observations(self):
-    of = obs.ObservationFactory()
+    of = obs.ObservationFactory(self.client)
     of.register_observation(CompliantObs(None))
     of.get_observation_space()
 

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from pybullet_utils import bullet_client
 from typing import List, Tuple
 
 import pybullet as p
@@ -13,6 +14,14 @@ from gym_solo import solo_types
 
 
 class Observation(ABC):
+  """An observation for a body in the pybullet simulation.
+
+  Attributes:
+    _client: The PyBullet client for the instance. Will be set via a
+      property setter.
+  """
+  _client: bullet_client.BulletClient = None
+
   @abstractmethod
   def __init__(self, body_id: int):
     """Create a new Observation.
@@ -58,11 +67,40 @@ class Observation(ABC):
     """
     pass
 
+  @property
+  def client(self) -> bullet_client.BulletClient:
+    """Get the Observation's physics client.
+
+    Raises:
+      ValueError: If the PyBullet client hasn't been set yet.
+
+    Returns:
+      bullet_client.BulletClient: The active client for the observation.
+    """
+    if not self._client:
+      raise ValueError('PyBullet client needs to be set')
+    return self._client
+
+  @client.setter
+  def client(self, client: bullet_client.BulletClient):
+    """Set the Observation's physics client.
+
+    Args:
+      client (bullet_client.BulletClient): The client to use for the 
+        observation.
+    """
+    self._client = client
+
 
 class ObservationFactory:
-  def __init__(self):
+  def __init__(self, client: bullet_client.BulletClient):
     """Create a new Observation Factory.
+
+    Args:
+      client (bullet_client.BulletClient): Pybullet client to perform 
+        calculations.
     """
+    self._client = client
     self._observations = []
     self._obs_space = None
 
@@ -72,6 +110,8 @@ class ObservationFactory:
     Args:
       obs (Observation): Observation to be tracked.
     """
+    obs.client = self._client
+
     lbl_len = len(obs.labels)
     obs_space_len = len(obs.observation_space.low)
     obs_len = obs.compute().size
@@ -94,7 +134,7 @@ class ObservationFactory:
         i-th observation.
     """
     if not self._observations:
-      return np.empty(shape=(0,)), []
+      raise ValueError('Need to register at least one observation instance')
 
     all_obs = [] 
     all_labels = []
@@ -191,12 +231,12 @@ class TorsoIMU(Observation):
       solo_types.obs: The observation for the current state (accessed via
         pybullet)
     """
-    _, orien_quat = p.getBasePositionAndOrientation(self.robot)
+    _, orien_quat = self.client.getBasePositionAndOrientation(self.robot)
 
     # Orien is in (x, y, z)
-    orien = np.array(p.getEulerFromQuaternion(orien_quat))
+    orien = np.array(self.client.getEulerFromQuaternion(orien_quat))
 
-    v_lin, v_ang = p.getBaseVelocity(self.robot)
+    v_lin, v_ang = self.client.getBaseVelocity(self.robot)
     v_lin = np.array(v_lin) 
     v_ang = np.array(v_ang)
 
@@ -222,7 +262,10 @@ class MotorEncoder(Observation):
     """
     self.robot = body_id
     self._degrees = degrees
-    self._num_joints = p.getNumJoints(self.robot)
+
+  @property
+  def _num_joints(self):
+    return self.client.getNumJoints(self.robot)
   
   @property
   def observation_space(self) -> spaces.Space:
@@ -234,7 +277,7 @@ class MotorEncoder(Observation):
     lower, upper = [], []
 
     for joint in range(self._num_joints):
-      joint_info = p.getJointInfo(self.robot, joint)
+      joint_info = self.client.getJointInfo(self.robot, joint)
       lower.append(joint_info[8])
       upper.append(joint_info[9])
 
@@ -247,6 +290,7 @@ class MotorEncoder(Observation):
 
     return spaces.Box(low=lower, high=upper)
 
+  @property
   def labels(self) -> List[str]:
     """A list of labels corresponding to the observation.
 
@@ -254,8 +298,8 @@ class MotorEncoder(Observation):
       List[str]: Labels, where the index is the same as its respective 
       observation.
     """
-    return [p.getJointInfo(self.robot, joint)[1].decode('UTF-8') 
-              for joint in range(self._num_joints)]
+    return [self.client.getJointInfo(self.robot, joint)[1].decode('UTF-8') 
+            for joint in range(self._num_joints)]
 
   def compute(self) -> solo_types.obs:
     """Computes the motor position values all the joints of the robot 
@@ -264,11 +308,10 @@ class MotorEncoder(Observation):
     Returns:
       solo_types.obs: The observation extracted from pybullet
     """
-    joint_values = np.array([p.getJointState(self.robot, i)[0] 
-                    for i in range(self._num_joints)])
+    joint_values = np.array([self.client.getJointState(self.robot, i)[0] 
+                             for i in range(self._num_joints)])
 
     if self._degrees:
       joint_values = np.degrees(joint_values)
       
     return joint_values
-    

@@ -1,8 +1,10 @@
 import unittest
 from gym_solo.envs import solo8v2vanilla as solo_env
 
-from gym_solo.core.test_obs_factory import CompliantObs
+from gym_solo.core import obs as solo_obs
+from gym_solo.testing import CompliantObs
 from gym_solo.testing import SimpleReward
+from gym_solo.testing import DummyTermination
 
 from gym import error, spaces
 from parameterized import parameterized
@@ -12,6 +14,7 @@ import importlib
 import numpy as np
 import os
 import pybullet as p
+import pybullet_utils.bullet_client as bc
 
 
 class TestSolo8v2VanillaEnv(unittest.TestCase):
@@ -34,7 +37,10 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     env = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig(),
                                    realtime=True)
     env.reward_factory.register_reward(1, SimpleReward())
-
+    
+    env.obs_factory.register_observation(CompliantObs(None))
+    env.termination_factory.register_termination(DummyTermination(0, True))
+    
     env.step(env.action_space.sample())
     self.assertTrue(mock_time.called)
     
@@ -69,11 +75,11 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     ('nogui', {'use_gui': False}, p.DIRECT),
     ('gui', {'use_gui': True}, p.GUI),
   ])
-  @mock.patch('pybullet.connect')
-  def test_GUI(self, name, kwargs, expected_ui, mock_connect):
+  @mock.patch('pybullet_utils.bullet_client.BulletClient')
+  def test_GUI(self, name, kwargs, expected_ui, mock_client):
     env = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig(),
                                    **kwargs)
-    mock_connect.assert_called_with(expected_ui)
+    mock_client.assert_called_with(connection_mode=expected_ui)
 
   def test_action_space(self):
     limit = 0.5
@@ -89,7 +95,10 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
 
   def test_actions(self):
     no_op = np.zeros(self.env.action_space.shape[0])
-
+    
+    self.env.obs_factory.register_observation(CompliantObs(None))
+    self.env.termination_factory.register_termination(DummyTermination(0, True))
+    
     # Let the robot stabilize first
     for i in range(1000):
       self.env.step(no_op)
@@ -114,6 +123,9 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
       self.assert_array_not_almost_equal(orientation, new_or)
 
   def test_reset(self):
+    self.env.obs_factory.register_observation(CompliantObs(None))
+    self.env.termination_factory.register_termination(DummyTermination(0, True))
+    
     base_pos, base_or = p.getBasePositionAndOrientation(self.env.robot)
     
     action = np.array([5.] * self.env.action_space.shape[0])
@@ -136,6 +148,9 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
       env.step(np.zeros(self.env.action_space.shape[0]))
 
   def test_step_simple_reward(self):
+    self.env.obs_factory.register_observation(CompliantObs(None))
+    self.env.termination_factory.register_termination(DummyTermination(0, True))
+    
     obs, reward, done, info = self.env.step(self.env.action_space.sample())
     self.assertEqual(reward, 1)
 
@@ -143,6 +158,25 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     o = CompliantObs(None)
     self.env.obs_factory.register_observation(o)
     self.assertEqual(o.observation_space, self.env.observation_space)
+
+  def test_disjoint_environments(self):
+    env1 = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig())
+    env1.obs_factory.register_observation(solo_obs.TorsoIMU(env1.robot))
+    env1.obs_factory.register_observation(solo_obs.MotorEncoder(env1.robot))
+    env1.reward_factory.register_reward(1, SimpleReward())
+    env1.termination_factory.register_termination(DummyTermination(0, True))
+    home_position = env1.reset()
+    
+    for i in range(1000):
+      env1.step(env1.action_space.sample())
+
+    env2 = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig())
+    env2.obs_factory.register_observation(solo_obs.TorsoIMU(env2.robot))
+    env2.obs_factory.register_observation(solo_obs.MotorEncoder(env2.robot))
+    env2.reward_factory.register_reward(1, SimpleReward())
+    env2.termination_factory.register_termination(DummyTermination(0, True))
+
+    np.testing.assert_array_almost_equal(home_position, env2.reset())
 
 if __name__ == '__main__':
   unittest.main()
