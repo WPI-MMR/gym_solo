@@ -3,7 +3,6 @@
 The motors have no torque applied to them; the user can interact with the robot
 via the interactive GUI. The simulation will output the observation.
 """
-import argparse
 import gym
 import numpy as np
 
