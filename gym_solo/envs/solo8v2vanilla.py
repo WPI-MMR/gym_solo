@@ -84,11 +84,6 @@ class Solo8VanillaEnv(gym.Env):
         observation, the reward for that step, whether or not the episode 
         terminates, and an info dict for misc diagnostic details.
     """
-    # self.client.setJointMotorControlArray(self.robot, 
-    #                             np.arange(self.action_space.shape[0]),
-    #                             p.TORQUE_CONTROL, forces=action,
-    #                             positionGains=self._zero_gains, 
-    #                             velocityGains=self._zero_gains)
     self.client.setJointMotorControlArray(
       self.robot, np.arange(self.action_space.shape[0]), p.POSITION_CONTROL, 
       targetPositions = action, 
@@ -118,19 +113,16 @@ class Solo8VanillaEnv(gym.Env):
     joint_ordering = [self.client.getJointInfo(self.robot, j)[1].decode('UTF-8')
                       for j in range(joint_cnt)]
     positions = [self._config.starting_joint_pos[j] for j in joint_ordering]
-    # print(positions)
 
-    # TODO: We need to change this to have the robot always be in home position
-    # Let gravity do it's thing and reset the environment deterministically
+    # Let the robot lay down flat, as intended. Note that this is a hack
+    # around modifying the URDF, but that should really be handled in the
+    # solidworks phase
     for i in range(500):
       self.client.setJointMotorControlArray(
         self.robot, np.arange(self.action_space.shape[0]), p.POSITION_CONTROL, 
         targetPositions = positions, 
         forces = [self._config.motor_torque_limit] * self.action_space.shape[0])
-      # self.client.setJointMotorControlArray(
-      #   self.robot, np.arange(self.action_space.shape[0]), 
-      #   p.TORQUE_CONTROL, forces=self._zero_gains, 
-      #   positionGains=self._zero_gains, velocityGains=self._zero_gains)
+
       self.client.stepSimulation()
     
     if init_call:
@@ -157,10 +149,6 @@ class Solo8VanillaEnv(gym.Env):
       flags=p.URDF_USE_INERTIA_FROM_FILE, useFixedBase=False)
 
     joint_cnt = self.client.getNumJoints(robot_id)
-    # self.client.setJointMotorControlArray(robot_id, np.arange(joint_cnt),
-    #                                       p.VELOCITY_CONTROL, 
-    #                                       forces=np.zeros(joint_cnt))
-
     for joint in range(joint_cnt):
       self.client.changeDynamics(robot_id, joint, 
                                  linearDamping=self._config.linear_damping, 
