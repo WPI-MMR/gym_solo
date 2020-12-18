@@ -84,7 +84,7 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     mock_client.assert_called_with(connection_mode=expected_ui)
 
   def test_action_space(self):
-    limit = 0.5
+    limit = 2 * np.pi
     joint_cnt = 12  # 8 dof + 4 "ankle" joints
 
     space = spaces.Box(-limit, limit, shape=(joint_cnt,))

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Tuple
 
+import numpy as np
 import pkg_resources
 
 
@@ -14,6 +15,8 @@ class Solo8BaseConfig:
   robot_start_pos: Tuple[float] = (0., 0., 0.5)
   robot_start_orientation_euler: Tuple[float] = (0., 0., 0.)
   gravity: Tuple[float] = (0., 0., -9.81)
+
+  max_motor_rotation = 2 * np.pi
 
   linear_damping: float = .04
   angular_damping: float = .04

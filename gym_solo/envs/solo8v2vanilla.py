@@ -65,8 +65,8 @@ class Solo8VanillaEnv(gym.Env):
     self.termination_factory = terms.TerminationFactory()
 
     self._zero_gains = np.zeros(joint_cnt)
-    self.action_space = spaces.Box(-self._config.motor_torque_limit, 
-                                   self._config.motor_torque_limit,
+    self.action_space = spaces.Box(-self._config.max_motor_rotation, 
+                                   self._config.max_motor_rotation,
                                    shape=(joint_cnt,))
     
     self.reset(init_call=True)
