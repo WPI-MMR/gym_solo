@@ -2,6 +2,7 @@
 .vscode/
 venv-*/
 *.egg-info/
+*.swp
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

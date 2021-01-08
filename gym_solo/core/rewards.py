@@ -105,3 +105,42 @@ class UprightReward(Reward):
     _, quat = p.getBasePositionAndOrientation(self._robot_id)
     unused_x, y, unused_z = np.array(p.getEulerFromQuaternion(quat))
     return self._fully_upright * y / self._fully_upright ** 2
+
+
+class HomePositionReward(Reward):
+  """Rewards the robot for being in the home position. Currently, this rewards
+  the robot for being orientated properly and being as tall as possible. This
+  will require some experimentation--if the robot ends up jumping to maximize
+  the reward, this might need to be modified to a more intelligent height 
+  reward.
+  """
+  # Found via experimentation--should be close enough to prevent any 
+  # non-trivial errors
+  _quad_standing_height = 0.3
+  _max_angle = np.pi
+
+  def __init__(self, robot_id: int):
+    """Create a new HomePositionReward.
+
+    Args:
+      robot_id (int): The PyBullet body id of the robot
+    """
+    self._robot_id = robot_id
+
+  def compute(self) -> float:
+    """Compute the HomePositionReward for the current state. 
+
+    Returns:
+      float: A real-valued in [0, 1], where 1 is in the home position.
+    """
+    (unused_x, unused_y, z), quat = p.getBasePositionAndOrientation(
+      self._robot_id)
+    theta_x, theta_y, unused_z = np.array(p.getEulerFromQuaternion(quat))
+
+    x_reward = self._max_angle - abs(theta_x)
+    y_reward = self._max_angle - abs(theta_y)
+
+    orientation_reward = (x_reward + y_reward) / (2 * self._max_angle)
+    height_reward = z / self._quad_standing_height
+    
+    return 0.25 * orientation_reward + 0.75 * height_reward
