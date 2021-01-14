@@ -177,10 +177,10 @@ class HomePositionReward(Reward):
     theta_x, theta_y, unused_z = np.array(
       self.client.getEulerFromQuaternion(quat))
 
-    x_reward = self._max_angle - abs(theta_x)
-    y_reward = self._max_angle - abs(theta_y)
+    x_reward = (self._max_angle - abs(theta_x)) / (self._max_angle * 2)
+    y_reward = (self._max_angle - abs(theta_y)) / (self._max_angle * 2)
 
-    orientation_reward = (x_reward + y_reward) / (2 * self._max_angle)
+    orientation_reward = x_reward + y_reward
     height_reward = z / self._quad_standing_height
     
     # Currently magic numbers for the relative weighting--will probably need
