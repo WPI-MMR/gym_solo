@@ -76,13 +76,15 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     ('gui', {'use_gui': True}, p.GUI),
   ])
   @mock.patch('pybullet_utils.bullet_client.BulletClient')
-  def test_GUI(self, name, kwargs, expected_ui, mock_client):
+  @mock.patch.object(solo_env.Solo8VanillaEnv, 'reset')
+  def test_GUI(self, name, kwargs, expected_ui, fake_reset, 
+               mock_client):
     env = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig(),
                                    **kwargs)
     mock_client.assert_called_with(connection_mode=expected_ui)
 
   def test_action_space(self):
-    limit = 0.5
+    limit = 2 * np.pi
     joint_cnt = 12  # 8 dof + 4 "ankle" joints
 
     space = spaces.Box(-limit, limit, shape=(joint_cnt,))

@@ -23,6 +23,20 @@ from gym_solo import solo_types
 @dataclass
 class Solo8VanillaConfig(Solo8BaseConfig):
   urdf_path: str = 'assets/solo8v2/solo.urdf'
+  starting_joint_pos = {
+    'FL_HFE': np.pi / 2,
+    'FL_KFE': np.pi,
+    'FL_ANKLE': 0,
+    'FR_HFE': np.pi / 2,
+    'FR_KFE': np.pi,
+    'FR_ANKLE': 0,
+    'HL_HFE': -np.pi / 2,
+    'HL_KFE': -np.pi,
+    'HL_ANKLE': 0,
+    'HR_HFE': -np.pi / 2,
+    'HR_KFE': -np.pi,
+    'HR_ANKLE': 0
+  }
 
 
 class Solo8VanillaEnv(gym.Env):
@@ -51,8 +65,8 @@ class Solo8VanillaEnv(gym.Env):
     self.termination_factory = terms.TerminationFactory()
 
     self._zero_gains = np.zeros(joint_cnt)
-    self.action_space = spaces.Box(-self._config.motor_torque_limit, 
-                                   self._config.motor_torque_limit,
+    self.action_space = spaces.Box(-self._config.max_motor_rotation, 
+                                   self._config.max_motor_rotation,
                                    shape=(joint_cnt,))
     
     self.reset(init_call=True)
@@ -70,11 +84,10 @@ class Solo8VanillaEnv(gym.Env):
         observation, the reward for that step, whether or not the episode 
         terminates, and an info dict for misc diagnostic details.
     """
-    self.client.setJointMotorControlArray(self.robot, 
-                                np.arange(self.action_space.shape[0]),
-                                p.TORQUE_CONTROL, forces=action,
-                                positionGains=self._zero_gains, 
-                                velocityGains=self._zero_gains)
+    self.client.setJointMotorControlArray(
+      self.robot, np.arange(self.action_space.shape[0]), p.POSITION_CONTROL, 
+      targetPositions = action, 
+      forces = [self._config.motor_torque_limit] * self.action_space.shape[0])
     self.client.stepSimulation()
 
     if self._realtime:
@@ -95,15 +108,21 @@ class Solo8VanillaEnv(gym.Env):
       solo_types.obs: The initial observation of the space.
     """
     self.client.removeBody(self.robot)
-    self.robot, _ = self._load_robot()
+    self.robot, joint_cnt = self._load_robot()
+    
+    joint_ordering = [self.client.getJointInfo(self.robot, j)[1].decode('UTF-8')
+                      for j in range(joint_cnt)]
+    positions = [self._config.starting_joint_pos[j] for j in joint_ordering]
 
-    # TODO: We need to change this to have the robot always be in home position
-    # Let gravity do it's thing and reset the environment deterministically
-    for i in range(1000):
+    # Let the robot lay down flat, as intended. Note that this is a hack
+    # around modifying the URDF, but that should really be handled in the
+    # solidworks phase
+    for i in range(500):
       self.client.setJointMotorControlArray(
-        self.robot, np.arange(self.action_space.shape[0]), 
-        p.TORQUE_CONTROL, forces=self._zero_gains, 
-        positionGains=self._zero_gains, velocityGains=self._zero_gains)
+        self.robot, np.arange(self.action_space.shape[0]), p.POSITION_CONTROL, 
+        targetPositions = positions, 
+        forces = [self._config.motor_torque_limit] * self.action_space.shape[0])
+
       self.client.stepSimulation()
     
     if init_call:
@@ -130,10 +149,6 @@ class Solo8VanillaEnv(gym.Env):
       flags=p.URDF_USE_INERTIA_FROM_FILE, useFixedBase=False)
 
     joint_cnt = self.client.getNumJoints(robot_id)
-    self.client.setJointMotorControlArray(robot_id, np.arange(joint_cnt),
-                                          p.VELOCITY_CONTROL, 
-                                          forces=np.zeros(joint_cnt))
-
     for joint in range(joint_cnt):
       self.client.changeDynamics(robot_id, joint, 
                                  linearDamping=self._config.linear_damping, 
