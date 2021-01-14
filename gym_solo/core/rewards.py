@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from pybullet_utils import bullet_client
 from typing import List
 
 import numpy as np
@@ -9,6 +10,14 @@ from gym_solo import solo_types
 
 
 class Reward(ABC):  
+  """A reward for a body in a pybullet simulation.
+
+  Attributes:
+    _client: The PyBullet client for the instance. Will be set via a
+      property setter.
+  """
+  _client: bullet_client.BulletClient = None
+
   @abstractmethod
   def compute(self) -> solo_types.reward:
     """Compute the reward for the current state.
@@ -17,6 +26,30 @@ class Reward(ABC):
       solo_types.reward: The reward evalulated at the current state.
     """
     pass
+
+  @property
+  def client(self) -> bullet_client.BulletClient:
+    """Get the reward's physics client.
+
+    Raises:
+      ValueError: If the PyBullet client hasn't been set yet.
+
+    Returns:
+      bullet_client.BulletClient: The active client for the reward.
+    """
+    if self._client is None:
+      raise ValueError('PyBullet client needs to be set')
+    return self._client
+
+  @client.setter
+  def client(self, client: bullet_client.BulletClient):
+    """Set the reward's physics client.
+
+    Args:
+      client (bullet_client.BulletClient): The client to use for the 
+        reward.
+    """
+    self._client = client
 
 
 @dataclass
@@ -39,8 +72,13 @@ class RewardFactory:
   temporal decay), then it's probably in your best interest to implement that
   in a custom Reward.
   """
-  def __init__(self):
-    """Create a new RewardFactory."""
+  def __init__(self, client: bullet_client.BulletClient):
+    """Create a new RewardFactory.
+    
+    Args:
+      client (bullet_client.BulletClient): Sandboxed Pybullet client.
+    """
+    self._client = client
     self._rewards: List[_WeightedReward] = []
 
   def register_reward(self, weight: float, reward: Reward):
@@ -53,6 +91,7 @@ class RewardFactory:
       reward (Reward): A Reward object which .compute() will be called on at
         reward computation time.
     """
+    reward.client = self._client
     self._rewards.append(_WeightedReward(reward=reward, weight=weight))
 
   def get_reward(self) -> float:
@@ -102,8 +141,8 @@ class UprightReward(Reward):
       float: A real-valued number in [-1, 1], where 1 means perfectly upright 
       whilst -1 means that the robot is literally upside down. 
     """
-    _, quat = p.getBasePositionAndOrientation(self._robot_id)
-    unused_x, y, unused_z = np.array(p.getEulerFromQuaternion(quat))
+    _, quat = self.client.getBasePositionAndOrientation(self._robot_id)
+    unused_x, y, unused_z = np.array(self.client.getEulerFromQuaternion(quat))
     return self._fully_upright * y / self._fully_upright ** 2
 
 
@@ -133,14 +172,17 @@ class HomePositionReward(Reward):
     Returns:
       float: A real-valued in [0, 1], where 1 is in the home position.
     """
-    (unused_x, unused_y, z), quat = p.getBasePositionAndOrientation(
+    (unused_x, unused_y, z), quat = self.client.getBasePositionAndOrientation(
       self._robot_id)
-    theta_x, theta_y, unused_z = np.array(p.getEulerFromQuaternion(quat))
+    theta_x, theta_y, unused_z = np.array(
+      self.client.getEulerFromQuaternion(quat))
 
-    x_reward = self._max_angle - abs(theta_x)
-    y_reward = self._max_angle - abs(theta_y)
+    x_reward = (self._max_angle - abs(theta_x)) / (self._max_angle * 2)
+    y_reward = (self._max_angle - abs(theta_y)) / (self._max_angle * 2)
 
-    orientation_reward = (x_reward + y_reward) / (2 * self._max_angle)
+    orientation_reward = x_reward + y_reward
     height_reward = z / self._quad_standing_height
     
+    # Currently magic numbers for the relative weighting--will probably need
+    # to be tuned down the line
     return 0.25 * orientation_reward + 0.75 * height_reward
