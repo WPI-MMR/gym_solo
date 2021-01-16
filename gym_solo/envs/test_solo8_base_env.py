@@ -12,6 +12,7 @@ from gym_solo.core import termination as terms
 from gym_solo.core import configs
 from gym_solo.core import obs
 from gym_solo.core import rewards
+from gym_solo import testing
 
 
 class SimpleSoloEnv(Solo8BaseEnv):
@@ -104,6 +105,11 @@ class TestSolo8BaseEnv(unittest.TestCase):
 
       self.assertEqual(numpy_control, float(np.random.rand(1)))
       self.assertEqual(random_control, random.random())
+
+  def test_obs_space(self):
+    self.env.obs_factory.register_observation(testing.CompliantObs(None))
+    self.assertEqual(self.env.observation_space, 
+                     self.env.obs_factory.get_observation_space())
 
 
 if __name__ == '__main__':

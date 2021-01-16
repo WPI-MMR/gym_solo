@@ -66,6 +66,15 @@ class Solo8BaseEnv(ABC, gym.Env):
     """
     pass
 
+  @property
+  def observation_space(self):
+    """Get the agent's observation space.
+
+    Returns:
+      gym.Space: The agent's observation space.
+    """
+    return self.obs_factory.get_observation_space()
+
   def _close(self):
     """Soft shutdown the environment."""
     self.client.disconnect()

@@ -129,11 +129,6 @@ class Solo8VanillaEnv(gym.Env):
     else:
       obs_values, _ = self.obs_factory.get_obs()
       return obs_values
-  
-  @property
-  def observation_space(self):
-    # TODO: Write tests for this function
-    return self.obs_factory.get_observation_space()
 
   def _load_robot(self) -> Tuple[int, int]:
     """Load the robot from URDF and reset the dynamics.
