@@ -67,7 +67,18 @@ class Solo8BaseEnv(ABC, gym.Env):
     pass
 
   @property
-  def observation_space(self):
+  @abstractmethod
+  def action_space(self) -> gym.Space:
+    """Get the action space of the agent.
+
+    Returns:
+      gym.Space: A Space representing the domain of valid moves for the
+        agent.
+    """
+    pass
+
+  @property
+  def observation_space(self) -> gym.Space:
     """Get the agent's observation space.
 
     Returns:

@@ -4,6 +4,7 @@ import unittest
 from parameterized import parameterized
 from unittest import mock
 
+import gym
 import importlib
 import pybullet as p
 import pybullet_utils.bullet_client
@@ -16,6 +17,8 @@ from gym_solo import testing
 
 
 class SimpleSoloEnv(Solo8BaseEnv):
+  action_space = gym.spaces.Box(3,4, shape=(3, 4))
+
   def __init__(self, *args, **kwargs):
     self.reset_call = None
     self.load_bodies_call = None
