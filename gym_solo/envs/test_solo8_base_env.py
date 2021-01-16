@@ -6,9 +6,12 @@ from unittest import mock
 
 import importlib
 import pybullet as p
-import pybullet_utils.bullet_client as bc
+import pybullet_utils.bullet_client
 
+from gym_solo.core import termination as terms
 from gym_solo.core import configs
+from gym_solo.core import obs
+from gym_solo.core import rewards
 
 
 class SimpleSoloEnv(Solo8BaseEnv):
@@ -35,20 +38,34 @@ class TestSolo8BaseEnv(unittest.TestCase):
 
   def test_abstract_init(self):
     with self.assertRaises(TypeError):
-      env = Solo8BaseEnv()
+      Solo8BaseEnv()
 
   def test_init(self):
     config = configs.Solo8BaseConfig()
     gui = False
 
-    with mock.patch('pybullet_utils.bullet_client.BulletClient') as mock_client:
+    with mock.patch('pybullet_utils.bullet_client.BulletClient') as mock_cls:
+      mock_client = mock.MagicMock()
+      mock_cls.return_value = mock_client
       env = SimpleSoloEnv(config, gui)
 
     with self.subTest('config'):
       self.assertEqual(env.config, config)
     
-    # with self.subTest('client'):
-    #   mock_client.setAdditionalSearchPath.assert_called_once()
+    with self.subTest('client init'):
+      mock_client.setAdditionalSearchPath.assert_called_once()
+      mock_client.setGravity.assert_called_once()
+      mock_client.setPhysicsEngineParameter.assert_called_once()
+      mock_client.loadURDF.assert_called_once()
+
+    with self.subTest('factories'):
+      self.assertIsInstance(env.obs_factory, obs.ObservationFactory)
+      self.assertIsInstance(env.reward_factory, rewards.RewardFactory)
+      self.assertIsInstance(env.termination_factory, terms.TerminationFactory)
+
+    with self.subTest('abc methods'):
+      self.assertTrue(env.load_bodies_call)
+      self.assertTrue(env.reset_call)
 
   @parameterized.expand([
     ('nogui', False, p.DIRECT),
