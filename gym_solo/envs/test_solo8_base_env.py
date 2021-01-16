@@ -3,7 +3,9 @@ import unittest
 
 
 class TestSolo8BaseEnv(unittest.TestCase):
-  pass
+  def test_abstract_init(self):
+    with self.assertRaises(TypeError):
+      env = Solo8BaseEnv()
 
 
 if __name__ == '__main__':

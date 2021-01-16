@@ -26,14 +26,13 @@ class Solo8BaseEnv(gym.Env, ABC):
       realtime (bool): Whether or not to run the simulation in real time. 
         Defaults to False.
     """
-    self._realtime = realtime
-    self._config = config
+    self.config = config
 
     self.client = bc.BulletClient(
       connection_mode=p.GUI if use_gui else p.DIRECT)
     self.client.setAdditionalSearchPath(pbd.getDataPath())
-    self.client.setGravity(*self._config.gravity)
-    self.client.setPhysicsEngineParameter(fixedTimeStep=self._config.dt, 
+    self.client.setGravity(*self.config.gravity)
+    self.client.setPhysicsEngineParameter(fixedTimeStep=self.config.dt, 
                                           numSubSteps=1)
 
     self.plane = self.client.loadURDF('plane.urdf')
