@@ -1,4 +1,5 @@
-import abc
+from abc import ABC, abstractmethod
+
 import gym
 import pybullet as p
 import pybullet_data as pbd
@@ -10,7 +11,7 @@ from gym_solo.core import obs
 from gym_solo.core import rewards
 
 
-class Solo8BaseEnv(gym.Env, abc.ABC):
+class Solo8BaseEnv(gym.Env, ABC):
   """Solo 8 abstract base environment."""
   def __init__(self, config: configs.Solo8BaseConfig, use_gui: bool, 
                realtime: bool):
@@ -41,3 +42,16 @@ class Solo8BaseEnv(gym.Env, abc.ABC):
     self.termination_factory = terms.TerminationFactory()
 
     self.reset(init_call=True)
+
+  @abstractmethod
+  def reset(init_call: bool = False):
+    """Reset the environment.
+    
+    For best results, this method should be deterministic; i.e. the environment
+    should return to the same state everytime this method is called.
+
+    Args:
+      init_call (bool, optional): If this function is being called from the init
+        function. Defaults to False.
+    """
+    pass
