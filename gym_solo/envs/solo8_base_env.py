@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
 
 import gym
+import numpy as np
 import pybullet as p
 import pybullet_data as pbd
 import pybullet_utils.bullet_client as bc
+import random
 
 from gym_solo.core import termination as terms
 from gym_solo.core import configs
@@ -65,3 +67,16 @@ class Solo8BaseEnv(gym.Env, ABC):
     be added via the self.client interface.
     """
     pass
+
+  def _close(self):
+    """Soft shutdown the environment."""
+    self.client.disconnect()
+
+  def _seed(self, seed: int) -> None:
+    """Set the seeds for random and numpy
+
+    Args:
+      seed (int): The seed to set
+    """
+    np.random.seed(seed)
+    random.seed(seed)
