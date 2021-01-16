@@ -62,6 +62,11 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     
     self.assertEqual(env.action_space, space)
 
+  def test_invalid_action_space(self):
+    self.env._action_space = None
+    with self.assertRaises(ValueError):
+      self.env.action_space
+
   def test_actions(self):
     no_op = np.zeros(self.env.action_space.shape[0])
     

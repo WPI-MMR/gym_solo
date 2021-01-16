@@ -52,6 +52,16 @@ class Solo8VanillaEnv(Solo8BaseEnv):
 
   @property
   def action_space(self) -> gym.Space:
+    """The action space of the agent.
+    
+    Aka what actions are "legal" for the agent to carry out.
+
+    Raises:
+      ValueError: Invalid action space
+
+    Returns:
+      gym.Space: The valid actions that the agent can take.
+    """
     if self._action_space:
       return self._action_space
     else:
