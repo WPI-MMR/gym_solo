@@ -19,8 +19,7 @@ if __name__ == '__main__':
 
   env.obs_factory.register_observation(obs.TorsoIMU(env.robot))
   env.reward_factory.register_reward(1,rewards.UprightReward(env.robot))
-  env.termination_factory.register_termination(
-    terms.TimeBasedTermination(100000000))
+  env.termination_factory.register_termination(terms.PerpetualTermination())
 
   try:
     print("""\n
