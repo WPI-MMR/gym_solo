@@ -28,7 +28,7 @@ class SimpleSoloEnv(Solo8BaseEnv):
 class TestSolo8BaseEnv(unittest.TestCase):
   def setUp(self):
     with mock.patch('pybullet_utils.bullet_client.BulletClient') as self.mock_client:
-      self.env = SimpleSoloEnv(configs.Solo8BaseConfig(), False, False)
+      self.env = SimpleSoloEnv(configs.Solo8BaseConfig(), False)
 
   def tearDown(self):
     self.env._close()
@@ -37,13 +37,26 @@ class TestSolo8BaseEnv(unittest.TestCase):
     with self.assertRaises(TypeError):
       env = Solo8BaseEnv()
 
+  def test_init(self):
+    config = configs.Solo8BaseConfig()
+    gui = False
+
+    with mock.patch('pybullet_utils.bullet_client.BulletClient') as mock_client:
+      env = SimpleSoloEnv(config, gui)
+
+    with self.subTest('config'):
+      self.assertEqual(env.config, config)
+    
+    # with self.subTest('client'):
+    #   mock_client.setAdditionalSearchPath.assert_called_once()
+
   @parameterized.expand([
     ('nogui', False, p.DIRECT),
     ('gui', True, p.GUI),
   ])
   @mock.patch('pybullet_utils.bullet_client.BulletClient')
   def test_GUI(self, name, use_gui, expected_ui, mock_client):
-    env = SimpleSoloEnv(configs.Solo8BaseConfig(), use_gui, False)
+    env = SimpleSoloEnv(configs.Solo8BaseConfig(), use_gui)
 
     mock_client.assert_called_with(connection_mode=expected_ui)
     self.assertTrue(env.load_bodies_call)
