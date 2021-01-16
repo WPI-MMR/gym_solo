@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
-import pkg_resources
 import pybullet as p
 import pybullet_data as pbd
 import pybullet_utils.bullet_client as bc
