@@ -44,7 +44,7 @@ class Solo8BaseEnv(gym.Env, ABC):
     self.reset(init_call=True)
 
   @abstractmethod
-  def reset(init_call: bool = False):
+  def reset(self, init_call: bool = False):
     """Reset the environment.
     
     For best results, this method should be deterministic; i.e. the environment
@@ -53,5 +53,15 @@ class Solo8BaseEnv(gym.Env, ABC):
     Args:
       init_call (bool, optional): If this function is being called from the init
         function. Defaults to False.
+    """
+    pass
+
+  @abstractmethod
+  def load_bodies(self):
+    """Load the bodies into the environment. 
+    
+    Note that a plane has already been loaded in and the entire environment
+    is encapsulated within the self.client object. Thus, all bodies should
+    be added via the self.client interface.
     """
     pass
