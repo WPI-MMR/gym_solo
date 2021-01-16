@@ -30,6 +30,9 @@ class TestSolo8BaseEnv(unittest.TestCase):
     with mock.patch('pybullet_utils.bullet_client.BulletClient') as self.mock_client:
       self.env = SimpleSoloEnv(configs.Solo8BaseConfig(), False, False)
 
+  def tearDown(self):
+    self.env._close()
+
   def test_abstract_init(self):
     with self.assertRaises(TypeError):
       env = Solo8BaseEnv()
