@@ -1,3 +1,4 @@
+from typing import Any, Dict, List, Tuple
 from abc import ABC, abstractmethod
 
 import gym
@@ -11,6 +12,7 @@ from gym_solo.core import termination as terms
 from gym_solo.core import configs
 from gym_solo.core import obs
 from gym_solo.core import rewards
+import gym_solo.solo_types as solo_types
 
 
 class Solo8BaseEnv(ABC, gym.Env):
@@ -44,19 +46,6 @@ class Solo8BaseEnv(ABC, gym.Env):
     self.reset(init_call=True)
 
   @abstractmethod
-  def reset(self, init_call: bool = False):
-    """Reset the environment.
-    
-    For best results, this method should be deterministic; i.e. the environment
-    should return to the same state everytime this method is called.
-
-    Args:
-      init_call (bool, optional): If this function is being called from the init
-        function. Defaults to False.
-    """
-    pass
-
-  @abstractmethod
   def load_bodies(self):
     """Load the bodies into the environment. 
     
@@ -74,6 +63,35 @@ class Solo8BaseEnv(ABC, gym.Env):
     Returns:
       gym.Space: A Space representing the domain of valid moves for the
         agent.
+    """
+    pass
+
+  @abstractmethod
+  def reset(self, init_call: bool = False):
+    """Reset the environment.
+    
+    For best results, this method should be deterministic; i.e. the environment
+    should return to the same state everytime this method is called.
+
+    Args:
+      init_call (bool, optional): If this function is being called from the init
+        function. Defaults to False.
+    """
+    pass
+
+  @abstractmethod
+  def step(self, action: List[float]) -> Tuple[solo_types.obs, float, bool, 
+                                                Dict[Any, Any]]:
+    """Have the agent apply the action in the environment.
+
+    Args:
+        action (List[float]): The action for the agent to take. Requires that
+        this conforms to self.action_space.
+
+    Returns:
+      Tuple[solo_types.obs, float, bool, Dict[Any, Any]]: A tuple of the next
+        observation, the reward for that step, whether or not the episode 
+        terminates, and an info dict for misc diagnostic details.
     """
     pass
 

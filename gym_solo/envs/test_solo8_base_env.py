@@ -31,6 +31,9 @@ class SimpleSoloEnv(Solo8BaseEnv):
   def load_bodies(self):
     self.load_bodies_call = True
 
+  def step(self):
+    pass
+
 
 class TestSolo8BaseEnv(unittest.TestCase):
   def setUp(self):
