@@ -43,32 +43,6 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     
     env.step(env.action_space.sample())
     self.assertTrue(mock_time.called)
-    
-  def test_seed(self):
-    seed = 69
-    self.env._seed(seed)
-
-    import numpy as np
-    import random
-    
-    numpy_control = float(np.random.rand(1))
-    random_control = random.random()
-
-    with self.subTest('random seed'):
-      importlib.reload(np)
-      importlib.reload(random)
-
-      self.assertNotEqual(numpy_control, float(np.random.rand(1)))
-      self.assertNotEqual(random_control, random.random())
-
-    with self.subTest('same seed'):
-      importlib.reload(np)
-      importlib.reload(random)
-
-      self.env._seed(seed)
-
-      self.assertEqual(numpy_control, float(np.random.rand(1)))
-      self.assertEqual(random_control, random.random())
 
   @parameterized.expand([
     ('default', {}, p.DIRECT),

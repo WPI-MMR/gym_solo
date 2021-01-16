@@ -3,6 +3,8 @@ import unittest
 
 from parameterized import parameterized
 from unittest import mock
+
+import importlib
 import pybullet as p
 import pybullet_utils.bullet_client as bc
 
@@ -24,6 +26,10 @@ class SimpleSoloEnv(Solo8BaseEnv):
 
 
 class TestSolo8BaseEnv(unittest.TestCase):
+  def setUp(self):
+    with mock.patch('pybullet_utils.bullet_client.BulletClient') as self.mock_client:
+      self.env = SimpleSoloEnv(configs.Solo8BaseConfig(), False, False)
+
   def test_abstract_init(self):
     with self.assertRaises(TypeError):
       env = Solo8BaseEnv()
@@ -39,6 +45,32 @@ class TestSolo8BaseEnv(unittest.TestCase):
     mock_client.assert_called_with(connection_mode=expected_ui)
     self.assertTrue(env.load_bodies_call)
     self.assertTrue(env.reset_call)
+
+  def test_seed(self):
+    seed = 69
+    self.env._seed(seed)
+
+    import numpy as np
+    import random
+    
+    numpy_control = float(np.random.rand(1))
+    random_control = random.random()
+
+    with self.subTest('random seed'):
+      importlib.reload(np)
+      importlib.reload(random)
+
+      self.assertNotEqual(numpy_control, float(np.random.rand(1)))
+      self.assertNotEqual(random_control, random.random())
+
+    with self.subTest('same seed'):
+      importlib.reload(np)
+      importlib.reload(random)
+
+      self.env._seed(seed)
+
+      self.assertEqual(numpy_control, float(np.random.rand(1)))
+      self.assertEqual(random_control, random.random())
 
 
 if __name__ == '__main__':
