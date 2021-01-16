@@ -123,11 +123,6 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     obs, reward, done, info = self.env.step(self.env.action_space.sample())
     self.assertEqual(reward, 1)
 
-  def test_observation_space(self):
-    o = CompliantObs(None)
-    self.env.obs_factory.register_observation(o)
-    self.assertEqual(o.observation_space, self.env.observation_space)
-
   def test_disjoint_environments(self):
     env1 = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig())
     env1.obs_factory.register_observation(solo_obs.TorsoIMU(env1.robot))
