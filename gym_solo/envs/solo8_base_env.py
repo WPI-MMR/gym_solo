@@ -13,7 +13,7 @@ from gym_solo.core import obs
 from gym_solo.core import rewards
 
 
-class Solo8BaseEnv(gym.Env, ABC):
+class Solo8BaseEnv(ABC, gym.Env):
   """Solo 8 abstract base environment."""
   def __init__(self, config: configs.Solo8BaseConfig, use_gui: bool, 
                realtime: bool):
