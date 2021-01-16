@@ -28,3 +28,12 @@ class TestTimeBasedTermination(unittest.TestCase):
 
       self.assertEqual(True, term.is_terminated())
       self.assertEqual(max_step_delta + 1, term.step_delta)
+
+
+class TestPerpetualTermination(unittest.TestCase):
+  def test_is_terminated(self):
+    term = termination.PerpetualTermination()
+
+    # Arbitrary count, just need to ensure that always returns False
+    for i in range(1000): 
+      self.assertFalse(term.is_terminated())
