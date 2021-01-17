@@ -24,8 +24,6 @@ class Solo8BaseEnv(ABC, gym.Env):
       config (configs.Solo8BaseConfig): The SoloConfig. Defaults to None.
       use_gui (bool): Whether or not to show the pybullet GUI. Defaults to 
         False.
-      realtime (bool): Whether or not to run the simulation in real time. 
-        Defaults to False.
     """
     self.config = config
 
