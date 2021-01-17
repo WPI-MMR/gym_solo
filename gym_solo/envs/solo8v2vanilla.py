@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
-import pkg_resources
 import pybullet as p
 import pybullet_data as pbd
 import pybullet_utils.bullet_client as bc
@@ -10,12 +9,13 @@ import random
 import time
 
 import gym
-from gym import error, spaces
+from gym import spaces
 
 from gym_solo.core.configs import Solo8BaseConfig
 from gym_solo.core import obs
 from gym_solo.core import rewards
 from gym_solo.core import termination as terms
+from gym_solo.envs import Solo8BaseEnv
 
 from gym_solo import solo_types
 
@@ -39,37 +39,33 @@ class Solo8VanillaConfig(Solo8BaseConfig):
   }
 
 
-class Solo8VanillaEnv(gym.Env):
+class Solo8VanillaEnv(Solo8BaseEnv):
   """An unmodified solo8 gym environment.
   
   Note that the model corresponds to the solo8v2.
   """
   def __init__(self, use_gui: bool = False, realtime: bool = False, 
-               config=None, **kwargs) -> None:
+               config=None, **kwargs):
     """Create a solo8 env"""
     self._realtime = realtime
-    self._config = config
+    super().__init__(config or Solo8VanillaConfig(), use_gui)
 
-    self.client = bc.BulletClient(
-      connection_mode=p.GUI if use_gui else p.DIRECT)
-    self.client.setAdditionalSearchPath(pbd.getDataPath())
-    self.client.setGravity(*self._config.gravity)
-    self.client.setPhysicsEngineParameter(fixedTimeStep=self._config.dt, 
-                                          numSubSteps=1)
-
-    self.plane = self.client.loadURDF('plane.urdf')
-    self.robot, joint_cnt = self._load_robot()
-
-    self.obs_factory = obs.ObservationFactory(self.client)
-    self.reward_factory = rewards.RewardFactory(self.client)
-    self.termination_factory = terms.TerminationFactory()
-
-    self._zero_gains = np.zeros(joint_cnt)
-    self.action_space = spaces.Box(-self._config.max_motor_rotation, 
-                                   self._config.max_motor_rotation,
-                                   shape=(joint_cnt,))
+  @property
+  def action_space(self) -> gym.Space:
+    """The action space of the agent.
     
-    self.reset(init_call=True)
+    Aka what actions are "legal" for the agent to carry out.
+
+    Raises:
+      ValueError: Invalid action space
+
+    Returns:
+      gym.Space: The valid actions that the agent can take.
+    """
+    if self._action_space:
+      return self._action_space
+    else:
+      raise ValueError('No valid action space')
 
   def step(self, action: List[float]) -> Tuple[solo_types.obs, float, bool, 
                                                 Dict[Any, Any]]:
@@ -87,11 +83,11 @@ class Solo8VanillaEnv(gym.Env):
     self.client.setJointMotorControlArray(
       self.robot, np.arange(self.action_space.shape[0]), p.POSITION_CONTROL, 
       targetPositions = action, 
-      forces = [self._config.motor_torque_limit] * self.action_space.shape[0])
+      forces = [self.config.motor_torque_limit] * self.action_space.shape[0])
     self.client.stepSimulation()
 
     if self._realtime:
-      time.sleep(self._config.dt)
+      time.sleep(self.config.dt)
 
     obs_values, obs_labels = self.obs_factory.get_obs()
     reward = self.reward_factory.get_reward()
@@ -108,11 +104,11 @@ class Solo8VanillaEnv(gym.Env):
       solo_types.obs: The initial observation of the space.
     """
     self.client.removeBody(self.robot)
-    self.robot, joint_cnt = self._load_robot()
+    self.load_bodies()
     
     joint_ordering = [self.client.getJointInfo(self.robot, j)[1].decode('UTF-8')
-                      for j in range(joint_cnt)]
-    positions = [self._config.starting_joint_pos[j] for j in joint_ordering]
+                      for j in range(self._joint_cnt)]
+    positions = [self.config.starting_joint_pos[j] for j in joint_ordering]
 
     # Let the robot lay down flat, as intended. Note that this is a hack
     # around modifying the URDF, but that should really be handled in the
@@ -121,7 +117,7 @@ class Solo8VanillaEnv(gym.Env):
       self.client.setJointMotorControlArray(
         self.robot, np.arange(self.action_space.shape[0]), p.POSITION_CONTROL, 
         targetPositions = positions, 
-        forces = [self._config.motor_torque_limit] * self.action_space.shape[0])
+        forces = [self.config.motor_torque_limit] * self.action_space.shape[0])
 
       self.client.stepSimulation()
     
@@ -130,43 +126,31 @@ class Solo8VanillaEnv(gym.Env):
     else:
       obs_values, _ = self.obs_factory.get_obs()
       return obs_values
-  
-  @property
-  def observation_space(self):
-    # TODO: Write tests for this function
-    return self.obs_factory.get_observation_space()
 
-  def _load_robot(self) -> Tuple[int, int]:
+  def load_bodies(self) -> Tuple[int, int]:
     """Load the robot from URDF and reset the dynamics.
 
     Returns:
         Tuple[int, int]: the id of the robot object and the number of joints.
     """
     robot_id = self.client.loadURDF(
-      self._config.urdf, self._config.robot_start_pos, 
+      self.config.urdf, self.config.robot_start_pos, 
       self.client.getQuaternionFromEuler(
-        self._config.robot_start_orientation_euler),
+        self.config.robot_start_orientation_euler),
       flags=p.URDF_USE_INERTIA_FROM_FILE, useFixedBase=False)
 
     joint_cnt = self.client.getNumJoints(robot_id)
     for joint in range(joint_cnt):
       self.client.changeDynamics(robot_id, joint, 
-                                 linearDamping=self._config.linear_damping, 
-                                 angularDamping=self._config.angular_damping, 
-                                 restitution=self._config.restitution, 
-                                 lateralFriction=self._config.lateral_friction)
+                                 linearDamping=self.config.linear_damping, 
+                                 angularDamping=self.config.angular_damping, 
+                                 restitution=self.config.restitution, 
+                                 lateralFriction=self.config.lateral_friction)
+    
+    self.robot = robot_id
+    self._joint_cnt = joint_cnt
+    self._zero_gains = np.zeros(self._joint_cnt)
 
-    return robot_id, joint_cnt
-
-  def _close(self) -> None:
-    """Soft shutdown the environment. """
-    self.client.disconnect()
-
-  def _seed(self, seed: int) -> None:
-    """Set the seeds for random and numpy
-
-    Args:
-      seed (int): The seed to set
-    """
-    np.random.seed(seed)
-    random.seed(seed)
+    self._action_space = spaces.Box(-self.config.max_motor_rotation, 
+                                   self.config.max_motor_rotation,
+                                   shape=(self._joint_cnt,))

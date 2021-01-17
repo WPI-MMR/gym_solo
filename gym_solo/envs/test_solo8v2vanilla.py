@@ -43,45 +43,12 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     
     env.step(env.action_space.sample())
     self.assertTrue(mock_time.called)
-    
-  def test_seed(self):
-    seed = 69
-    self.env._seed(seed)
 
-    import numpy as np
-    import random
-    
-    numpy_control = float(np.random.rand(1))
-    random_control = random.random()
-
-    with self.subTest('random seed'):
-      importlib.reload(np)
-      importlib.reload(random)
-
-      self.assertNotEqual(numpy_control, float(np.random.rand(1)))
-      self.assertNotEqual(random_control, random.random())
-
-    with self.subTest('same seed'):
-      importlib.reload(np)
-      importlib.reload(random)
-
-      self.env._seed(seed)
-
-      self.assertEqual(numpy_control, float(np.random.rand(1)))
-      self.assertEqual(random_control, random.random())
-
-  @parameterized.expand([
-    ('default', {}, p.DIRECT),
-    ('nogui', {'use_gui': False}, p.DIRECT),
-    ('gui', {'use_gui': True}, p.GUI),
-  ])
   @mock.patch('pybullet_utils.bullet_client.BulletClient')
   @mock.patch.object(solo_env.Solo8VanillaEnv, 'reset')
-  def test_GUI(self, name, kwargs, expected_ui, fake_reset, 
-               mock_client):
-    env = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig(),
-                                   **kwargs)
-    mock_client.assert_called_with(connection_mode=expected_ui)
+  def test_GUI_default(self, fake_reset, mock_client):
+    solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig())
+    mock_client.assert_called_with(connection_mode=p.DIRECT)
 
   def test_action_space(self):
     limit = 2 * np.pi
@@ -94,6 +61,11 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     env = solo_env.Solo8VanillaEnv(config=config)
     
     self.assertEqual(env.action_space, space)
+
+  def test_invalid_action_space(self):
+    self.env._action_space = None
+    with self.assertRaises(ValueError):
+      self.env.action_space
 
   def test_actions(self):
     no_op = np.zeros(self.env.action_space.shape[0])
@@ -155,11 +127,6 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     
     obs, reward, done, info = self.env.step(self.env.action_space.sample())
     self.assertEqual(reward, 1)
-
-  def test_observation_space(self):
-    o = CompliantObs(None)
-    self.env.obs_factory.register_observation(o)
-    self.assertEqual(o.observation_space, self.env.observation_space)
 
   def test_disjoint_environments(self):
     env1 = solo_env.Solo8VanillaEnv(config=solo_env.Solo8VanillaConfig())
