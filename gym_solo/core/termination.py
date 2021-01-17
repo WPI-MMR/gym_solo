@@ -81,3 +81,18 @@ class TimeBasedTermination(Termination):
     """
     self.step_delta += 1
     return self.step_delta > self.max_step_delta 
+
+
+class PerpetualTermination(Termination):
+  """Termination condition that never ends. Useful for demos / testing."""
+  def reset(self):
+    """Unneeded."""
+    pass
+
+  def is_terminated(self) -> bool:
+    """Always returns that the episode is *not* terminated.
+
+    Returns:
+      bool: False
+    """
+    return False
