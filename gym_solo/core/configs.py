@@ -23,11 +23,11 @@ class Solo8BaseConfig:
   restitution: float = 0.
   lateral_friction: float = 0.5
 
-  render_width: int = 640
-  render_height: int = 480
+  render_width: int = 369
+  render_height: int = 369
   render_fov: int = 80
   render_aspect: float = render_width / render_height
-  render_pos = [0, 0, 0]
+  render_pos = [0, 0, .2]
   render_cam_distance = 1
   render_yaw = 0.
   render_pitch = -20.

@@ -55,7 +55,7 @@ if __name__ == '__main__':
                      for param in joint_params]
       obs, reward, done, info = env.step(user_joints)
       
-      if cnt % 20 == 0:
+      if cnt % 100 == 0:
         config.render_fov = env.client.readUserDebugParameter(
           camera_params['fov'])
         config.render_cam_distance = env.client.readUserDebugParameter(
@@ -66,8 +66,6 @@ if __name__ == '__main__':
           camera_params['pitch'])
         config.render_roll = env.client.readUserDebugParameter(
           camera_params['roll'])
-
-        env.render()
       cnt += 1
   except KeyboardInterrupt:
     pass

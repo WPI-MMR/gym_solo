@@ -17,6 +17,8 @@ import gym_solo.solo_types as solo_types
 
 class Solo8BaseEnv(ABC, gym.Env):
   """Solo 8 abstract base environment."""
+  metadata = {'render.modes': ['rgb_array']}
+
   def __init__(self, config: configs.Solo8BaseConfig, use_gui: bool):
     """Create a solo8 env.
 
