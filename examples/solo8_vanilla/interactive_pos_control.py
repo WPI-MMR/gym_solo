@@ -66,6 +66,7 @@ if __name__ == '__main__':
           camera_params['pitch'])
         config.render_roll = env.client.readUserDebugParameter(
           camera_params['roll'])
+        env.render()
       cnt += 1
   except KeyboardInterrupt:
     pass
