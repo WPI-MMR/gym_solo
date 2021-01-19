@@ -103,14 +103,18 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     base_pos, base_or = p.getBasePositionAndOrientation(self.env.robot)
     
     action = np.array([5.] * self.env.action_space.shape[0])
-    for i in range(100):
+    for _ in range(100):
       self.env.step(action)
+    self.assertEqual(
+      self.env.termination_factory._terminations[0].reset_counter, 1)
       
     new_pos, new_or = p.getBasePositionAndOrientation(self.env.robot)
     self.assert_array_not_almost_equal(base_pos, new_pos)
     self.assert_array_not_almost_equal(base_or, new_or)
 
     self.env.reset()
+    self.assertEqual(
+      self.env.termination_factory._terminations[0].reset_counter, 2)
 
     new_pos, new_or = p.getBasePositionAndOrientation(self.env.robot)
     np.testing.assert_array_almost_equal(base_pos, new_pos)
