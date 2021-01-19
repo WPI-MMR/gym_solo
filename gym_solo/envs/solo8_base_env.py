@@ -105,11 +105,23 @@ class Solo8BaseEnv(ABC, gym.Env):
     return self.obs_factory.get_observation_space()
 
   def render(self, mode='rgb_array') -> List[List[List[int]]]:
+    """Render the current state of the Solo 8 env.
+    
+    Note that the camera is controlled by the `config` option passed in at
+    construction time.
+
+    Args:
+      mode (str, optional): Rendering mode. Refer to OpenAI Gym documentation. 
+        Defaults to 'rgb_array'.
+
+    Returns:
+      List[List[List[int]]]: a 2D list of RGBA pixel data.
+    """
     proj_matrix = self.client.computeProjectionMatrixFOV(
       self.config.render_fov, self.config.render_aspect,
       0.01, 100)
     view_matrix = self.client.computeViewMatrixFromYawPitchRoll(
-      self.config.render_pos,  self.config.render_cam_distance, 
+      self.config.render_pos, self.config.render_cam_distance, 
       self.config.render_yaw, self.config.render_pitch,
       self.config.render_roll, 2)
     
