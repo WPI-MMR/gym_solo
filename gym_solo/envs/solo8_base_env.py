@@ -102,6 +102,22 @@ class Solo8BaseEnv(ABC, gym.Env):
     """
     return self.obs_factory.get_observation_space()
 
+  def render(self, mode='rgb_array') -> List[List[List[int]]]:
+    proj_matrix = self.client.computeProjectionMatrixFOV(
+      self.config.render_fov, self.config.render_aspect,
+      0.01, 100)
+    view_matrix = self.client.computeViewMatrixFromYawPitchRoll(
+      self.config.render_pos,  self.config.render_cam_distance, 
+      self.config.render_yaw, self.config.render_pitch,
+      self.config.render_roll, 2)
+    
+    w, h, rgb, _, _ = self.client.getCameraImage(
+      self.config.render_width, self.config.render_height, view_matrix,
+      proj_matrix)
+
+    # 4 Channels for RGBA
+    return np.reshape(rgb, (h, w, 4))
+
   def _close(self):
     """Soft shutdown the environment."""
     self.client.disconnect()

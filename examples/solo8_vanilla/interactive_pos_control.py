@@ -27,6 +27,14 @@ if __name__ == '__main__':
       'Joint {}'.format(
         env.client.getJointInfo(env.robot, joint)[1].decode('UTF-8')),
       -2 * np.pi, 2 * np.pi, 0))
+
+  camera_params = {
+    'fov': env.client.addUserDebugParameter('fov', 30, 150, 80),
+    'distance': env.client.addUserDebugParameter('distance', .1, 5, 1.5),
+    'yaw': env.client.addUserDebugParameter('yaw', -90, 90, 0),
+    'pitch': env.client.addUserDebugParameter('pitch', -90, 90, -10),
+    'roll': env.client.addUserDebugParameter('roll', -90, 90, 0),
+  }
   
 
   try:
@@ -40,9 +48,26 @@ if __name__ == '__main__':
           =============================================
           """)
 
-    while True:
+    done = False
+    cnt = 0
+    while not done:
       user_joints = [env.client.readUserDebugParameter(param)
                      for param in joint_params]
       obs, reward, done, info = env.step(user_joints)
+      
+      if cnt % 20 == 0:
+        config.render_fov = env.client.readUserDebugParameter(
+          camera_params['fov'])
+        config.render_cam_distance = env.client.readUserDebugParameter(
+          camera_params['distance'])
+        config.render_yaw = env.client.readUserDebugParameter(
+          camera_params['yaw'])
+        config.render_pitch = env.client.readUserDebugParameter(
+          camera_params['pitch'])
+        config.render_roll = env.client.readUserDebugParameter(
+          camera_params['roll'])
+
+        env.render()
+      cnt += 1
   except KeyboardInterrupt:
     pass

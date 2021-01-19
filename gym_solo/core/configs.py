@@ -23,6 +23,16 @@ class Solo8BaseConfig:
   restitution: float = 0.
   lateral_friction: float = 0.5
 
+  render_width: int = 640
+  render_height: int = 480
+  render_fov: int = 80
+  render_aspect: float = render_width / render_height
+  render_pos = [0, 0, 0]
+  render_cam_distance = 1
+  render_yaw = 0.
+  render_pitch = -20.
+  render_roll = 0.
+
   @property
   def urdf(self):
     return pkg_resources.resource_filename('gym_solo', self.urdf_path)
