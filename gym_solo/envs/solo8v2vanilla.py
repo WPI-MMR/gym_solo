@@ -120,6 +120,7 @@ class Solo8VanillaEnv(Solo8BaseEnv):
         forces = [self.config.motor_torque_limit] * self.action_space.shape[0])
 
       self.client.stepSimulation()
+    self.termination_factory.reset()
     
     if init_call:
       return np.empty(shape=(0,)), []
