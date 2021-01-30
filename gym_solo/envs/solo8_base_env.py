@@ -33,8 +33,12 @@ class Solo8BaseEnv(ABC, gym.Env):
       connection_mode=p.GUI if use_gui else p.DIRECT)
     self.client.setAdditionalSearchPath(pbd.getDataPath())
     self.client.setGravity(*self.config.gravity)
-    self.client.setPhysicsEngineParameter(fixedTimeStep=self.config.dt, 
-                                          numSubSteps=1)
+
+    if self.config.dt:
+      self.client.setPhysicsEngineParameter(fixedTimeStep=self.config.dt, 
+                                            numSubSteps=1)
+    else:
+      self.client.setRealTimeSimulation(1)
 
     self.plane = self.client.loadURDF('plane.urdf')
     self.load_bodies()
