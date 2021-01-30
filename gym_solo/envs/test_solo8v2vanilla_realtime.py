@@ -2,6 +2,7 @@ import unittest
 import gym_solo.envs.solo8v2vanilla_realtime as solo_env
 
 from gym_solo.core import termination as terms
+from gym_solo import solo_types
 from gym_solo import testing
 
 
@@ -26,6 +27,10 @@ class TestSolo8v2VanillaRealtimeEnv(unittest.TestCase):
                           testing.SimpleReward)
 
     self.assertEqual(len(env.obs_factory._observations), 0)
+
+  def test_client_patching(self):
+    env = solo_env.RealtimeSolo8VanillaEnv(use_gui=False)
+    self.assertEqual(env.client.stepSimulation(), solo_types.no_op)
 
   
 if __name__ == '__main__':

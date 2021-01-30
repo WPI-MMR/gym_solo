@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Tuple
 
 from gym_solo.core.termination import PerpetualTermination
+from gym_solo import solo_types
 from gym_solo import testing 
 
 from gym_solo.envs.solo8v2vanilla import Solo8VanillaConfig
@@ -32,3 +33,7 @@ class RealtimeSolo8VanillaEnv(Solo8VanillaEnv):
     super().__init__(use_gui, False, config)
     self.reward_factory.register_reward(1, testing.SimpleReward())
     self.termination_factory.register_termination(PerpetualTermination())
+
+  def client_configuration(self):
+    # Make the step simulation a no-op
+    self.client.stepSimulation = lambda *args, **kwargs: solo_types.no_op
