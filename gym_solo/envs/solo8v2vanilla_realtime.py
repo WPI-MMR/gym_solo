@@ -1,8 +1,11 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List, Tuple
 
-from gym_solo.envs.solo8v2vanilla import Solo8VanillaConfig, Solo8VanillaEnv
-from gym_solo import solo_types
+from gym_solo.core.termination import PerpetualTermination
+from gym_solo import testing 
+
+from gym_solo.envs.solo8v2vanilla import Solo8VanillaConfig
+from gym_solo.envs.solo8v2vanilla import Solo8VanillaEnv
 
 
 @dataclass
@@ -27,3 +30,5 @@ class RealtimeSolo8VanillaEnv(Solo8VanillaEnv):
       raise ValueError('Cannot have a dt in a realtime simulation')
 
     super().__init__(use_gui, False, config)
+    self.reward_factory.register_reward(1, testing.SimpleReward())
+    self.termination_factory.register_termination(PerpetualTermination())
