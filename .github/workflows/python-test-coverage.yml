@@ -26,8 +26,9 @@ jobs:
         python -m pip install -e .[test]
     - name: Run tests
       uses: GabrielBB/xvfb-action@v1
-      run: |
-        python -m unittest discover -v
+      with:
+        run: |
+          python -m unittest discover -v
     - name: Generate coverage report
       run: |
         coverage run --source=gym_solo -m unittest discover
