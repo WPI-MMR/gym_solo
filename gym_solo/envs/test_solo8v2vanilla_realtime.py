@@ -56,6 +56,7 @@ class TestSolo8v2VanillaRealtimeEnv(unittest.TestCase):
     end_step_pos, _ = env.obs_factory.get_obs()
 
     env.reset()
+    time.sleep(.5)
     new_reset_pos, _ = env.obs_factory.get_obs()
 
     self.assertEqual(len(starting_pos), len(sleep_pos))
