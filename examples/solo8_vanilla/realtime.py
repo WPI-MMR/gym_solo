@@ -16,10 +16,7 @@ from gym_solo.core import termination as terms
 
 if __name__ == '__main__':
   env = gym.make('solo8vanilla-realtime-v0')
-
   env.obs_factory.register_observation(obs.TorsoIMU(env.robot))
-  env.reward_factory.register_reward(1,rewards.UprightReward(env.robot))
-  env.termination_factory.register_termination(terms.PerpetualTermination())
 
   try:
     print("""\n
@@ -33,6 +30,7 @@ if __name__ == '__main__':
           """)
 
     while True:
+      # print(env.obs_factory.get_obs())
       pass
   except KeyboardInterrupt:
     pass

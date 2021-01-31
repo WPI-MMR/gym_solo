@@ -29,9 +29,11 @@ so any local changes will be reflected in the package as well.
 
 
 # Running Tests
-All of our tests can be run by using python's built in `unittest`. To run the
+All of our tests can be run by using python's built in `unittest`. However,due to how PyBullet works, we require some extra dependencies. To run the
 tests, use the following procedure:
 
-1. Source the environment
-2. Navigate to the root of the repository
-3. `python -m unittest discover -v`
+1. Install `xvfb` (on Ubuntu, you can do `sudo apt install xvfb`)
+2. Follow the instructions above for creating the virtual environment,
+   but use `pip install -e .[test]` instead of `pip install -e .`
+4. Navigate to the root of the repository
+5. `python -m unittest discover -v .`
