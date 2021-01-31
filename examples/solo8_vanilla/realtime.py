@@ -29,8 +29,11 @@ if __name__ == '__main__':
           =============================================
           """)
 
+    env.reset()
     while True:
-      # print(env.obs_factory.get_obs())
-      pass
+      pos = float(input('Which position do you want to set all the joints to?: '))
+      action = np.full(env.action_space.shape, pos)
+      env.step(action)
+
   except KeyboardInterrupt:
     pass
