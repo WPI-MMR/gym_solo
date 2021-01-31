@@ -56,6 +56,7 @@ class TestSolo8v2VanillaRealtimeEnv(unittest.TestCase):
     end_step_pos, _ = env.obs_factory.get_obs()
 
     env.reset()
+    # Problem with the gh action runner. Works without this time delay locally
     time.sleep(.5)
     new_reset_pos, _ = env.obs_factory.get_obs()
 
