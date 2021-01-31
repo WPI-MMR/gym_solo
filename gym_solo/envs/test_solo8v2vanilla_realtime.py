@@ -62,11 +62,11 @@ class TestSolo8v2VanillaRealtimeEnv(unittest.TestCase):
     self.assertEqual(len(sleep_pos), len(init_step_pos))
     self.assertEqual(len(init_step_pos), len(end_step_pos))
 
-    np.testing.assert_array_almost_equal(starting_pos, sleep_pos, decimal=2)
+    np.testing.assert_array_almost_equal(starting_pos, sleep_pos, decimal=3)
     with self.assertRaises(AssertionError):
       np.testing.assert_array_almost_equal(init_step_pos, end_step_pos)
 
-    np.testing.assert_array_almost_equal(starting_pos, new_reset_pos)
+    np.testing.assert_array_almost_equal(starting_pos, new_reset_pos, decimal=3)
 
   
 if __name__ == '__main__':
