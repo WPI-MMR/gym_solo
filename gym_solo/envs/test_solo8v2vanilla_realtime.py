@@ -66,7 +66,8 @@ class TestSolo8v2VanillaRealtimeEnv(unittest.TestCase):
     with self.assertRaises(AssertionError):
       np.testing.assert_array_almost_equal(init_step_pos, end_step_pos)
 
-    np.testing.assert_array_almost_equal(starting_pos, new_reset_pos, decimal=3)
+    np.testing.assert_array_almost_equal(starting_pos, new_reset_pos, 
+                                         decimal=3)
 
   
 if __name__ == '__main__':
