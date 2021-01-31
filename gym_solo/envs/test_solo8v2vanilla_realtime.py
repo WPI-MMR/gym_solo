@@ -50,7 +50,7 @@ class TestSolo8v2VanillaRealtimeEnv(unittest.TestCase):
     time.sleep(.5)
     sleep_pos, _ = env.obs_factory.get_obs()
 
-    env.step(env.action_space.high)
+    env.step(env.action_space.sample())
     init_step_pos, _  = env.obs_factory.get_obs()
     time.sleep(.5)
     end_step_pos, _ = env.obs_factory.get_obs()
@@ -63,8 +63,6 @@ class TestSolo8v2VanillaRealtimeEnv(unittest.TestCase):
     self.assertEqual(len(init_step_pos), len(end_step_pos))
 
     np.testing.assert_array_almost_equal(starting_pos, sleep_pos)
-    np.testing.assert_array_almost_equal(sleep_pos, init_step_pos)
-
     with self.assertRaises(AssertionError):
       np.testing.assert_array_almost_equal(init_step_pos, end_step_pos)
 
