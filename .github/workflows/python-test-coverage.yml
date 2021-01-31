@@ -21,14 +21,13 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
+        sudo apt-get install xvfb
         python -m pip install --upgrade wheel pip
         python -m pip install coverage coveralls
         python -m pip install -e .[test]
     - name: Run tests
-      uses: GabrielBB/xvfb-action@v1
-      with:
-        run: |
-          python -m unittest discover -v
+      run: |
+        python -m unittest discover -v
     - name: Generate coverage report
       run: |
         coverage run --source=gym_solo -m unittest discover
