@@ -21,6 +21,7 @@ class SimpleSoloEnv(Solo8BaseEnv):
 
   def __init__(self, *args, **kwargs):
     self.reset_call = None
+    self.client_call = 0
     self.load_bodies_call = None
 
     super().__init__(*args, **kwargs)
@@ -33,6 +34,9 @@ class SimpleSoloEnv(Solo8BaseEnv):
 
   def step(self):
     pass
+
+  def client_configuration(self):
+    self.client_call += 1
 
 
 class TestSolo8BaseEnv(unittest.TestCase):
@@ -116,6 +120,35 @@ class TestSolo8BaseEnv(unittest.TestCase):
     self.env.obs_factory.register_observation(testing.CompliantObs(None))
     self.assertEqual(self.env.observation_space, 
                      self.env.obs_factory.get_observation_space())
+
+  @mock.patch('pybullet_utils.bullet_client.BulletClient')
+  def test_fixed_timestep(self, mock_cls):
+    mock_client = mock.MagicMock()
+    mock_cls.return_value = mock_client
+    
+    dt = 20
+    config = configs.Solo8BaseConfig(dt=dt)
+    self.assertIsNotNone(config.dt)
+ 
+    _ = SimpleSoloEnv(config, False)
+    mock_client.setPhysicsEngineParameter.assert_called_once_with(
+      fixedTimeStep=dt, numSubSteps=1)
+
+  @mock.patch('pybullet_utils.bullet_client.BulletClient')
+  def test_realtime_simulation(self, mock_cls):
+    mock_client = mock.MagicMock()
+    mock_cls.return_value = mock_client
+
+    dt = None
+    config = configs.Solo8BaseConfig(dt=dt)
+    self.assertIsNone(config.dt)
+
+    _ = SimpleSoloEnv(config, False)
+    mock_client.setRealTimeSimulation.assert_called_once_with(1)
+
+  def test_client_configuration(self):
+    env = SimpleSoloEnv(configs.Solo8BaseConfig(), False)
+    self.assertEquals(env.client_call, 1)
 
 
 if __name__ == '__main__':

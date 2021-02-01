@@ -33,8 +33,14 @@ class Solo8BaseEnv(ABC, gym.Env):
       connection_mode=p.GUI if use_gui else p.DIRECT)
     self.client.setAdditionalSearchPath(pbd.getDataPath())
     self.client.setGravity(*self.config.gravity)
-    self.client.setPhysicsEngineParameter(fixedTimeStep=self.config.dt, 
-                                          numSubSteps=1)
+
+    if self.config.dt:
+      self.client.setPhysicsEngineParameter(fixedTimeStep=self.config.dt, 
+                                            numSubSteps=1)
+    else:
+      self.client.setRealTimeSimulation(1)
+
+    self.client_configuration()
 
     self.plane = self.client.loadURDF('plane.urdf')
     self.load_bodies()
@@ -131,6 +137,12 @@ class Solo8BaseEnv(ABC, gym.Env):
 
     # 4 Channels for RGBA
     return np.reshape(rgb, (h, w, 4))
+
+  def client_configuration(self):
+    """An overridable method if a child class needs to directly interact
+    with the PyBullet env at init time.
+    """
+    pass
 
   def _close(self):
     """Soft shutdown the environment."""
