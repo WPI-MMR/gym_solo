@@ -105,10 +105,9 @@ class Solo8VanillaEnv(Solo8BaseEnv):
     """
     self.client.removeBody(self.robot)
     self.load_bodies()
-    
-    joint_ordering = [self.client.getJointInfo(self.robot, j)[1].decode('UTF-8')
-                      for j in range(self._joint_cnt)]
-    positions = [self.config.starting_joint_pos[j] for j in joint_ordering]
+
+    positions = [self.config.starting_joint_pos[j] 
+                 for j in self.joint_ordering]
 
     # Let the robot lay down flat, as intended. Note that this is a hack
     # around modifying the URDF, but that should really be handled in the
@@ -140,18 +139,19 @@ class Solo8VanillaEnv(Solo8BaseEnv):
         self.config.robot_start_orientation_euler),
       flags=p.URDF_USE_INERTIA_FROM_FILE, useFixedBase=False)
 
-    joint_cnt = self.client.getNumJoints(robot_id)
-    for joint in range(joint_cnt):
+    self._joint_cnt = self.client.getNumJoints(robot_id)
+    for joint in range(self._joint_cnt):
       self.client.changeDynamics(robot_id, joint, 
                                  linearDamping=self.config.linear_damping, 
                                  angularDamping=self.config.angular_damping, 
                                  restitution=self.config.restitution, 
                                  lateralFriction=self.config.lateral_friction)
+
     
     self.robot = robot_id
-    self._joint_cnt = joint_cnt
     self._zero_gains = np.zeros(self._joint_cnt)
-
+    self.joint_ordering = [self.client.getJointInfo(self.robot, j)[1].decode('UTF-8')
+                           for j in range(self._joint_cnt)]
     self._action_space = spaces.Box(-self.config.max_motor_rotation, 
                                    self.config.max_motor_rotation,
                                    shape=(self._joint_cnt,))
