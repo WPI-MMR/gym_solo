@@ -10,8 +10,6 @@ import numpy as np
 import gym_solo
 from gym_solo.envs import solo8v2vanilla
 from gym_solo.core import obs
-from gym_solo.core import rewards
-from gym_solo.core import termination as terms
 
 
 if __name__ == '__main__':
