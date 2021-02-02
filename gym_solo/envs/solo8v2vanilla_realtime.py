@@ -66,3 +66,12 @@ class RealtimeSolo8VanillaEnv(Solo8VanillaEnv):
     super().reset(*args, **kwargs)
     # Since stepSimulation() is a noop, need to use time to reset the bot
     time.sleep(1)
+
+  def get_obs(self):
+    """Get the current observation of the environment.
+
+    Note this is different from the OpenAI gym `get_obs()` as this is
+    a realtime simulation, so `get_obs()` can have different results even
+    if `env.step()` isn't called.
+    """
+    return self.obs_factory.get_obs()
