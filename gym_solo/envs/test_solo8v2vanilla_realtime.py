@@ -12,6 +12,15 @@ from gym_solo import testing
 
 
 class TestSolo8v2VanillaRealtimeEnv(unittest.TestCase):
+  @classmethod
+  def setUpClass(cls):
+    cls.display = pyvirtualdisplay.Display(visible=False, size=(1400, 900))
+    cls.display.start()
+
+  @classmethod
+  def tearDownClass(cls):
+    cls.display.stop()
+
   def test_init_non_realtime(self):
     config = solo_env.RealtimeSolo8VanillaConfig()
     config.dt = 21
@@ -38,9 +47,6 @@ class TestSolo8v2VanillaRealtimeEnv(unittest.TestCase):
     self.assertEqual(env.client.stepSimulation(), solo_types.no_op)
 
   def test_step_and_reset(self):
-    display = pyvirtualdisplay.Display(visible=False, size=(1400, 900))
-    display.start()
-
     # Realtime only works in GUI mode
     env = solo_env.RealtimeSolo8VanillaEnv(use_gui=True)
     env.obs_factory.register_observation(obs.TorsoIMU(env.robot))
