@@ -46,11 +46,13 @@ class Solo8VanillaEnv(Solo8BaseEnv):
   Note that the model corresponds to the solo8v2.
   """
   def __init__(self, use_gui: bool = False, realtime: bool = False, 
-               config=None, normalize_actions=False, **kwargs):
+               config=None, normalize_actions: bool = False, 
+               normalize_observations: bool = False, **kwargs):
     """Create a solo8 env"""
     self._realtime = realtime
     self._normalize = normalize_actions
-    super().__init__(config or Solo8VanillaConfig(), use_gui)
+    super().__init__(config or Solo8VanillaConfig(), use_gui,
+                     normalize_observations=normalize_observations)
 
   @property
   def action_space(self) -> gym.Space:
