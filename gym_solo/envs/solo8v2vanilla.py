@@ -86,12 +86,11 @@ class Solo8VanillaEnv(Solo8BaseEnv):
         observation, the reward for that step, whether or not the episode 
         terminates, and an info dict for misc diagnostic details.
     """
-
     if self._normalize:
-      action = np.array(action)
-      action = ((action + 1) - (self._action_space.max - \
-                                self._action_space.min)) / \
-                2 + self._action_space.min
+      a = np.array(action)
+      low = self._action_space.low
+      hi = self._action_space.high
+      action = low + ((a + 1) * (hi - low)) / 2
     
     self.client.setJointMotorControlArray(
       self.robot, np.arange(self.action_space.shape[0]), p.POSITION_CONTROL, 

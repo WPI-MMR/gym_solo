@@ -103,6 +103,32 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
       self.assert_array_not_almost_equal(position, new_pos)
       self.assert_array_not_almost_equal(orientation, new_or)
 
+  def test_action_normalization(self):
+    joint_cnt = 12
+
+    config = solo_env.Solo8VanillaConfig()
+    config.max_motor_rotation = 10
+
+    env = solo_env.Solo8VanillaEnv(config=config, normalize_actions=True)
+    env.obs_factory.register_observation(CompliantObs(None))
+    env.termination_factory.register_termination(DummyTermination(0, True))
+    env.reward_factory.register_reward(1, SimpleReward())
+
+    mock_client = mock.MagicMock()
+    env.client = mock_client
+
+    env.step([-1.] * joint_cnt)
+    _, kwargs = mock_client.setJointMotorControlArray.call_args_list[-1]
+    np.testing.assert_array_equal(
+      kwargs['targetPositions'], 
+      np.array([-config.max_motor_rotation] * joint_cnt))
+    
+    env.step([1.] * joint_cnt)
+    _, kwargs = mock_client.setJointMotorControlArray.call_args_list[-1]
+    np.testing.assert_array_equal(
+      kwargs['targetPositions'], 
+      np.array([config.max_motor_rotation] * joint_cnt))
+
   def test_reset(self):
     self.env.obs_factory.register_observation(CompliantObs(None))
     self.env.termination_factory.register_termination(DummyTermination(0, True))
