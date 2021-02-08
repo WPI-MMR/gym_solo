@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List, Tuple
+from gym.spaces import space
 
 import numpy as np
 import pybullet as p
@@ -45,9 +46,10 @@ class Solo8VanillaEnv(Solo8BaseEnv):
   Note that the model corresponds to the solo8v2.
   """
   def __init__(self, use_gui: bool = False, realtime: bool = False, 
-               config=None, **kwargs):
+               config=None, normalize_actions=False, **kwargs):
     """Create a solo8 env"""
     self._realtime = realtime
+    self._normalize = normalize_actions
     super().__init__(config or Solo8VanillaConfig(), use_gui)
 
   @property
@@ -60,12 +62,16 @@ class Solo8VanillaEnv(Solo8BaseEnv):
       ValueError: Invalid action space
 
     Returns:
-      gym.Space: The valid actions that the agent can take.
+      gym.Space: The valid actions that the agent can take. If the environment
+        is in normalized mode, it will return a continuous space of [-1, 1].
     """
-    if self._action_space:
-      return self._action_space
-    else:
+    if not self._action_space:
       raise ValueError('No valid action space')
+
+    if self._normalize:
+      return spaces.Box(low=-1, high=1, shape=self._action_space.shape)
+    else:
+      return self._action_space
 
   def step(self, action: List[float]) -> Tuple[solo_types.obs, float, bool, 
                                                 Dict[Any, Any]]:
@@ -80,6 +86,13 @@ class Solo8VanillaEnv(Solo8BaseEnv):
         observation, the reward for that step, whether or not the episode 
         terminates, and an info dict for misc diagnostic details.
     """
+
+    if self._normalize:
+      action = np.array(action)
+      action = ((action + 1) - (self._action_space.max - \
+                                self._action_space.min)) / \
+                2 + self._action_space.min
+    
     self.client.setJointMotorControlArray(
       self.robot, np.arange(self.action_space.shape[0]), p.POSITION_CONTROL, 
       targetPositions = action, 
