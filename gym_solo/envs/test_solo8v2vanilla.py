@@ -1,4 +1,6 @@
 import unittest
+
+from gym.spaces import space
 from gym_solo.envs import solo8v2vanilla as solo_env
 
 from gym_solo.core import obs as solo_obs
@@ -61,6 +63,11 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     env = solo_env.Solo8VanillaEnv(config=config)
     
     self.assertEqual(env.action_space, space)
+
+  def test_normalized_action_space(self):
+    config = solo_env.Solo8VanillaConfig()
+    env = solo_env.Solo8VanillaEnv(config=config, normalize_actions=True)
+    self.assertEqual(env.action_space, spaces.Box(-1, 1, shape=(12,)))
 
   def test_invalid_action_space(self):
     self.env._action_space = None
