@@ -143,6 +143,19 @@ class TestObservationFactory(unittest.TestCase):
                        spaces.Box(low=np.array([0., 0., 5., 6.]),
                                   high=np.array([3., 3., 5., 6.])))
 
+  def test_get_observation_space_normalized(self):
+    of = obs.ObservationFactory(self.client, normalize=True)
+    of.register_observation(CompliantObs(None))
+
+    test_obs = CompliantObs(None)
+    test_obs.observation_space = spaces.Box(low=np.array([5., 6.]), 
+                                            high=np.array([5., 6.]))
+    of.register_observation(test_obs)
+
+    self.assertEqual(of.get_observation_space(),
+                      spaces.Box(low=np.array([-1., -1., -1., -1.]),
+                                high=np.array([1., 1., 1., 1.])))
+
 
 if __name__ == '__main__':
   unittest.main()
