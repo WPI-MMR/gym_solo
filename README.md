@@ -25,6 +25,7 @@
 - Fully encapsulated and multiprocessing-ready
 - Easily extendable environments, rewards, and observations
 - Automatically normalize observation and action spaces
+- Realtime simulations supported for non-discrete timesteps
 
 Note that this project is a heavy work-in-progress. While we may not be able
 to work on your issue, we appreciate any feedback. Additionally, if you have
