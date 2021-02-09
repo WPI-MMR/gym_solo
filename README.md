@@ -1,3 +1,5 @@
+<img src="doc/pos-control-screenshot.png" alt="screenshot" style="float: left;"
+  width=400px />
 <h1 align='center'> 
   Solo Gym<br/>
   <img src="https://upload.wikimedia.org/wikipedia/en/1/1b/WPI_logo.png" 
