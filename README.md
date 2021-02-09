@@ -1,4 +1,4 @@
-<h1 align='center'> 
+<h1 align="center"> 
   Solo Gym<br/>
   <img src="https://upload.wikimedia.org/wikipedia/en/1/1b/WPI_logo.png" 
     alt="WPI Logo" width=75px/> <br />
@@ -10,9 +10,29 @@
 </h1>
 
 <p align='center'><i>A custom open ai gym environment for Solo experimentation.
-  </i></p>
+  </i>
+  <br/>
+  <br/>
+  <img src="doc/pos-control-screenshot.png" alt="screenshot" width=600/>
+</p>
 
 ---
+
+**TL;DR**
+- An [OpenAI Gym](https://gym.openai.com/)-conformant environment featuring 
+  [ODRI's Solo 8](https://open-dynamic-robot-initiative.github.io/)
+- OpenAI Gym API offers out-of-the box compatibility with most RL frameworks
+- Fully encapsulated and multiprocessing-ready
+- Easily extendable environments, rewards, and observations
+- Automatically normalize observation and action spaces
+
+Note that this project is a heavy work-in-progress. While we may not be able
+to work on your issue, we appreciate any feedback. Additionally, if you have
+any interesting ideas that you'd like to implement, we'll happily take
+contributions!
+
+🌟 We appreciate your star, it helps!
+
 
 # Installation
 The recommended way to set up this environment is to use virtualenv's for its
