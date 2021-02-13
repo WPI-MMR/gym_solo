@@ -8,6 +8,7 @@ from unittest import mock
 
 import numpy as np
 import pybullet as p
+import math
 
 
 class TestRewardsFactory(unittest.TestCase):
@@ -156,6 +157,42 @@ class TestSmallControlReward(RewardBaseTestCase):
     reward = r.compute()
     self.assertGreaterEqual(reward, min_val),
     self.assertLessEqual(reward, max_val)
+
+    
+class TestHorizontalMoveSpeedReward(RewardBaseTestCase):
+  def test_init(self):
+    robot_id = 5
+    target_speed = 0
+    hard_margin = 20
+    soft_margin = 12
+
+    r = rewards.HorizontalMoveSpeedReward(robot_id, target_speed, hard_margin,
+                                          soft_margin)
+    
+    self.assertEqual(robot_id, r._robot_id)
+    self.assertEqual(target_speed, r._target_speed)
+    self.assertEqual(hard_margin, r._hard_margin)
+    self.assertEqual(soft_margin, r._soft_margin)
+
+  @parameterized.expand([
+    ('perfectly_still', 0, 0, 0, 0, 1, 1),
+    ('within_hard_bounds', .5, 0, 1, 0, 1, 1),
+    ('at_hard_bounds', .5, 0, .5, 0, 1, 1),
+    ('close_to_hard_bounds_no_soft', .5, 0, .49, 0, 0, 0),
+    ('close_to_hard_bounds_soft', .5, 0, .49, 1, .95, 1),
+    ('at_soft', .5, 0, 0, .5, 0, 0.05),
+  ])
+  def test_computation(self, name, speed, target, hard, soft, low, high):
+    mock_client = mock.MagicMock()
+    mock_client.getBaseVelocity.return_value = (speed / math.sqrt(2), 
+                                                speed / math.sqrt(2), None), None
+    r = rewards.HorizontalMoveSpeedReward(1, target, hard, soft)
+    r.client = mock_client
+
+    val = r.compute()
+
+    self.assertGreaterEqual(val, low)
+    self.assertLessEqual(val, high)
     
 
 class TestRewardUtilities(unittest.TestCase):

@@ -5,6 +5,7 @@ from typing import Tuple, List
 
 import numpy as np
 import pybullet as p
+import math
 
 from gym_solo import solo_types
 
@@ -218,6 +219,22 @@ class SmallControlReward(Reward):
                                  for i in range(joint_cnt)])
     avg_angular_speed = np.average(np.abs(joint_velocities))
     return tolerance(avg_angular_speed, margin=self._margin)
+
+
+class HorizontalMoveSpeedReward(Reward):
+  def __init__(self, robot_id: int, target_speed: int, hard_margin: float = .1,
+               soft_margin: float = 0.1):
+    self._robot_id = robot_id
+    self._target_speed = target_speed
+    self._hard_margin = hard_margin
+    self._soft_margin = soft_margin
+    
+  def compute(self) -> float:
+    (vx, vy, _), _ = self.client.getBaseVelocity(self._robot_id)
+    speed = math.sqrt(vx ** 2 + vy ** 2)
+    return tolerance(speed, bounds=(self._target_speed - self._hard_margin, 
+                                    self._target_speed + self._hard_margin),
+                     margin=self._soft_margin)
 
 
 def tolerance(x: float, bounds: Tuple[float, float] = (0., 0.), 
