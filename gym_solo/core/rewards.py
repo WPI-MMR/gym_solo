@@ -222,14 +222,35 @@ class SmallControlReward(Reward):
 
 
 class HorizontalMoveSpeedReward(Reward):
+  """Rewards the agent for maintaining a specific horizontal speed. """
   def __init__(self, robot_id: int, target_speed: int, hard_margin: float = .1,
                soft_margin: float = 0.1):
+    """Create a new HorizontalMoveSpeedReward
+
+    Args:
+      robot_id (int): the client-specific pybullet id 
+      target_speed (int): the target speed to maintain. The speed is computed
+        by the magnitude of the velocity vector.
+      hard_margin (float, optional): the margin where the perfect reward is 
+        given. For example, with a target speed of 0 and a margin of 0.1, a 
+        speed of 0.05 will still give a reward of 1. Defaults to .1.
+      soft_margin (float, optional): how long to have a downward sloping 
+        reward function. The value at the soft_margin is effectively 0. Defaults
+        to 0.1.
+    """
     self._robot_id = robot_id
     self._target_speed = target_speed
     self._hard_margin = hard_margin
     self._soft_margin = soft_margin
     
   def compute(self) -> float:
+    """Compute the HorizontalMoveSpeedReward for the current state.
+
+    Returns:
+      float: A real value in [0, 1], 1 if the horizontal velocity is near the
+        target velocity. The specific behavior of how "near" is defined is
+        in the constructor.
+    """
     (vx, vy, _), _ = self.client.getBaseVelocity(self._robot_id)
     speed = math.sqrt(vx ** 2 + vy ** 2)
     return tolerance(speed, bounds=(self._target_speed - self._hard_margin, 
