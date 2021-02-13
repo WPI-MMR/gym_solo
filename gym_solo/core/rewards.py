@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from numpy.testing._private.utils import requires_memory
 from pybullet_utils import bullet_client
 from typing import Tuple, List
 
