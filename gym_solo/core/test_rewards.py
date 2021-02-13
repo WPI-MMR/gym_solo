@@ -129,6 +129,45 @@ class TestHomePositionReward(RewardBaseTestCase):
     self.assertLess(start_reward, standing_straight_reward)
     self.assertLess(standing_skewed_reward, standing_straight_reward)
     self.assertLess(standing_straight_reward, home_reward)
+
+
+class TestRewardUtilities(unittest.TestCase):
+  @parameterized.expand([
+    ('simple_in_bounds', 0, (-1, 1), 0, 0, 1),
+    ('simple_out_of_bounds', 2, (-1, 1), 0, 0, 0),
+    ('in_single_bound', 2, (2, 2), 0, 0, 1),
+    ('out_of_single_bound', 2.0001, (2, 2), 0, 0, 0),
+    ('at_bounds_edge', 1, (-1, 1), 1, 1, 1),
+    ('at_margin_default_value', 2, (-1, 1), 1, 0, 0),
+    ('at_margin_margin_value', 2, (-1, 1), 1, .25, .25),
+  ])
+  def test_tolerance(self, name, x, bounds, margin, margin_value, 
+                     expected_value):
+    # Floating point issuses cause flakiness when doing an exact comparision
+    self.assertAlmostEqual(rewards.tolerance(x, bounds, margin, margin_value),
+                     expected_value)
+
+  def test_tolerance_relative(self):
+    bounds = (0,0)
+    margin = 1.
+    margin_value = .25
+
+    val1 = rewards.tolerance(0, bounds, margin, margin_value)
+    self.assertEqual(val1, 1)
+
+    val1 = rewards.tolerance(.25, bounds, margin, margin_value)
+    val2 = rewards.tolerance(1, bounds, margin, margin_value)
+
+    self.assertAlmostEqual(val2, margin_value)
+    self.assertGreater(val1, val2)
+
+  def test_tolerance_bounds_error(self):
+    with self.assertRaises(ValueError):
+      rewards.tolerance(0, bounds=(1, 0))
+
+  def test_tolerance_margin_error(self):
+    with self.assertRaises(ValueError):
+      self.assertRaises(rewards.tolerance(0, margin=-1))
     
 
 if __name__ == '__main__':

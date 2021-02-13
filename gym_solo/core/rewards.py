@@ -186,3 +186,26 @@ class HomePositionReward(Reward):
     # Currently magic numbers for the relative weighting--will probably need
     # to be tuned down the line
     return 0.25 * orientation_reward + 0.75 * height_reward
+
+
+def tolerance(x, bounds=(0., 0.), margin=0., margin_value=0):
+  lower, upper = bounds
+  if lower > upper:
+    raise ValueError('Lower bound ({}) is greater than upper bound ({})'.format(
+                     lower, upper))
+  if margin < 0:
+    raise ValueError('Magin must be non-negative: {}'.format(margin))
+
+  within_bounds = np.logical_and(lower <= x, x <= upper)
+  if margin == 0:
+    value = np.where(within_bounds, 1., 0.)
+  else:
+    # Compute a simple gaussian decline. More details can be found at
+    # https://en.wikipedia.org/wiki/Normal_distribution#Probability_density_function
+    scale = np.sqrt(-2 * np.log(margin_value))
+    sigmas = np.where(x < lower, lower - x, x - upper) / margin
+    values = np.exp(-0.5 * (sigmas * scale) ** 2)
+    
+    value = np.where(within_bounds, 1., values)
+  
+  return float(value) if np.isscalar(x) else value
