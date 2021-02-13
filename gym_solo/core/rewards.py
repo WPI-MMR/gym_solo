@@ -187,14 +187,46 @@ class HomePositionReward(Reward):
     # to be tuned down the line
     return 0.25 * orientation_reward + 0.75 * height_reward
 
+    
+class SmallControlReward(Reward):
+  """Rewards the robot for making minimal movements.
+  
+  This reward is useful for rewarding "stable" behavior down the line so that
+  the robot learns to make smoother and smaller movements.
+  """
+
+  def __init__(self, robot_id: int, margin: float = 1.):
+    """Create a new SmallControlReward.
+
+    Args:
+      robot_id (int): The pybullet ID of the robot
+      margin (float, optional): Control the steepness of the decline of the 
+        reward. Defaults to 1..
+    """
+    self._robot_id = robot_id
+    self._margin = margin
+
+  def compute(self) -> float:
+    """Compute the SmallControlReward for the current state.
+
+    Returns:
+      float: A real value in [0, 1], where 1 is if the robot is completely 
+        still.
+    """
+    joint_cnt = self.client.getNumJoints(self._robot_id)
+    joint_velocities = np.array([self.client.getJointState(self._robot_id, i)[1]
+                                 for i in range(joint_cnt)])
+    avg_angular_speed = np.average(np.abs(joint_velocities))
+    return tolerance(avg_angular_speed, margin=self._margin)
+
 
 def tolerance(x: float, bounds: Tuple[float, float] = (0., 0.), 
-              margin: float = 0., margin_value: float = 0):
+              margin: float = 0., margin_value: float = 1e-6):
   """
   Create a sloped reward function about a given bounds range.
 
   Args:
-    x (float): The value to evalulate.
+    x (float): The value to evaluate.
     bounds ((float, float)): A tuple of (lower, upper). If `x` falls between
       `lower` and `upper`, then the the returned value is 1. Otherwise the
       behavior is as described in the `Returns` section.
@@ -217,7 +249,11 @@ def tolerance(x: float, bounds: Tuple[float, float] = (0., 0.),
     raise ValueError('Lower bound ({}) is greater than upper bound ({})'.format(
                      lower, upper))
   if margin < 0:
-    raise ValueError('Magin must be non-negative: {}'.format(margin))
+    raise ValueError('Margin must be non-negative: {}'.format(margin))
+
+  if not 0 < margin_value <= 1:
+    raise ValueError('Margin value must be valued in (0, 1]: {}'.format(
+      margin_value))
 
   within_bounds = np.logical_and(lower <= x, x <= upper)
   if margin == 0:

@@ -131,14 +131,41 @@ class TestHomePositionReward(RewardBaseTestCase):
     self.assertLess(standing_straight_reward, home_reward)
 
 
+class TestSmallControlReward(RewardBaseTestCase):
+  def test_init(self):
+    margin = .25
+    robot_id = 5
+
+    r = rewards.SmallControlReward(robot_id, margin=margin)
+
+    self.assertEqual(r._margin, margin)
+    self.assertEqual(r._robot_id, robot_id)
+
+  @parameterized.expand([
+    ('not_moving_no_margin', 0, 0, 1, 1),
+    ('little_movement_no_margin', 0, 1e-5, 0, 0),
+    ('little_movement_margin', 1, 1e-5, 0.9, 1),
+  ])
+  def test_computation(self, name, margin, average_jnt_velocity, min_val, 
+                       max_val):
+    robot_id = 69
+    r = rewards.SmallControlReward(robot_id, margin=margin)
+    r.client = mock.MagicMock()
+    r.client.getJointState.return_value = (None, average_jnt_velocity)
+
+    reward = r.compute()
+    self.assertGreaterEqual(reward, min_val),
+    self.assertLessEqual(reward, max_val)
+    
+
 class TestRewardUtilities(unittest.TestCase):
   @parameterized.expand([
-    ('simple_in_bounds', 0, (-1, 1), 0, 0, 1),
-    ('simple_out_of_bounds', 2, (-1, 1), 0, 0, 0),
-    ('in_single_bound', 2, (2, 2), 0, 0, 1),
-    ('out_of_single_bound', 2.0001, (2, 2), 0, 0, 0),
-    ('at_bounds_edge', 1, (-1, 1), 1, 1, 1),
-    ('at_margin_default_value', 2, (-1, 1), 1, 0, 0),
+    ('simple_in_bounds', 0, (-1, 1), 0, 1e-6, 1),
+    ('simple_out_of_bounds', 2, (-1, 1), 0, 1e-6, 0),
+    ('in_single_bound', 2, (2, 2), 0, 1e-6, 1),
+    ('out_of_single_bound', 2.0001, (2, 2), 0, 1e-6, 0),
+    ('at_bounds_edge', 1, (-1, 1), 1, 1e-6, 1),
+    ('at_margin_default_value', 2, (-1, 1), 1, 1e-8, 1e-8),
     ('at_margin_margin_value', 2, (-1, 1), 1, .25, .25),
   ])
   def test_tolerance(self, name, x, bounds, margin, margin_value, 
@@ -168,7 +195,10 @@ class TestRewardUtilities(unittest.TestCase):
   def test_tolerance_margin_error(self):
     with self.assertRaises(ValueError):
       self.assertRaises(rewards.tolerance(0, margin=-1))
-    
+
+  def test_tolerance_margin_value_error(self):
+    with self.assertRaises(ValueError):
+      self.assertRaises(rewards.tolerance(0, margin_value=0))
 
 if __name__ == '__main__':
   unittest.main()
