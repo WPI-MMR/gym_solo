@@ -258,6 +258,41 @@ class HorizontalMoveSpeedReward(Reward):
                      margin=self._soft_margin)
 
 
+class TorsoHeightReward(Reward):
+  """Rewards the robot for maintaining a certain height with its Torso. """
+  def __init__(self, robot_id: int, target_height: int, hard_margin: float = .1,
+               soft_margin: float = 0.1):
+    """Create a new HorizontalMoveSpeedReward
+
+    Args:
+      robot_id (int): the client-specific pybullet id 
+      target_height (int): the target height to maintain. 
+      hard_margin (float, optional): the margin where the perfect reward is 
+        given. For example, with a target speed of 0 and a margin of 0.1, a 
+        speed of 0.05 will still give a reward of 1. Defaults to .1.
+      soft_margin (float, optional): how long to have a downward sloping 
+        reward function. The value at the soft_margin is effectively 0. Defaults
+        to 0.1.
+    """
+    self._robot_id = robot_id
+    self._target_height = target_height
+    self._hard_margin = hard_margin
+    self._soft_margin = soft_margin
+
+  def compute(self) -> float:
+    """Compute the TorsoHeightReward for the current state.
+
+    Returns:
+      float: A real value in [0, 1], 1 if the Torso's height is near the
+        target height. The specific behavior of how "near" is defined is in the 
+        constructor.
+    """
+    (_, _, z), _ = self.client.getBasePositionAndOrientation(self._robot_id)
+    return tolerance(z, bounds=(self._target_height - self._hard_margin,
+                                self._target_height + self._hard_margin),
+                     margin=self._soft_margin)
+
+
 def tolerance(x: float, bounds: Tuple[float, float] = (0., 0.), 
               margin: float = 0., margin_value: float = 1e-6):
   """

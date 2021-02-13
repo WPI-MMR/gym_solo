@@ -132,7 +132,7 @@ class TestHomePositionReward(RewardBaseTestCase):
     self.assertLess(standing_straight_reward, home_reward)
 
 
-class TestSmallControlReward(RewardBaseTestCase):
+class TestSmallControlReward(unittest.TestCase):
   def test_init(self):
     margin = .25
     robot_id = 5
@@ -159,7 +159,7 @@ class TestSmallControlReward(RewardBaseTestCase):
     self.assertLessEqual(reward, max_val)
 
     
-class TestHorizontalMoveSpeedReward(RewardBaseTestCase):
+class TestHorizontalMoveSpeedReward(unittest.TestCase):
   def test_init(self):
     robot_id = 5
     target_speed = 0
@@ -193,7 +193,42 @@ class TestHorizontalMoveSpeedReward(RewardBaseTestCase):
 
     self.assertGreaterEqual(val, low)
     self.assertLessEqual(val, high)
+
     
+class TestTorsoHeightReward(unittest.TestCase):
+  def test_init(self):
+    robot_id = 5
+    target_height = .3
+    hard_margin = 20
+    soft_margin = 12
+
+    r = rewards.TorsoHeightReward(robot_id, target_height, hard_margin, 
+                                  soft_margin)
+    
+    self.assertEqual(robot_id, r._robot_id)
+    self.assertEqual(target_height, r._target_height)
+    self.assertEqual(hard_margin, r._hard_margin)
+    self.assertEqual(soft_margin, r._soft_margin)
+    
+  @parameterized.expand([
+    ('perfect_stand', 1, 1, 0, 0, 1, 1),
+    ('within_hard_bounds', .75, 1, .5, 0, 1, 1),
+    ('at_hard_bounds', .5, 1, .5, 0, 1, 1),
+    ('close_to_hard_bounds_no_soft', .5, 0, .49, 0, 0, 0),
+    ('close_to_hard_bounds_soft', .5, 0, .49, 1, .95, 1),
+    ('at_soft', .5, 0, 0, .5, 0, 0.05),
+  ])
+  def test_computation(self, name, height, target, hard, soft, low, high):
+    mock_client = mock.MagicMock()
+    mock_client.getBasePositionAndOrientation.return_value = (None, None, height), None
+    r = rewards.TorsoHeightReward(1, target, hard, soft)
+    r.client = mock_client
+
+    val = r.compute()
+
+    self.assertGreaterEqual(val, low)
+    self.assertLessEqual(val, high)
+
 
 class TestRewardUtilities(unittest.TestCase):
   @parameterized.expand([
