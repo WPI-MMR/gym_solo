@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pybullet_utils import bullet_client
-from typing import List
+from typing import Tuple, List
 
 import numpy as np
 import pybullet as p
@@ -188,7 +188,30 @@ class HomePositionReward(Reward):
     return 0.25 * orientation_reward + 0.75 * height_reward
 
 
-def tolerance(x, bounds=(0., 0.), margin=0., margin_value=0):
+def tolerance(x: float, bounds: Tuple[float, float] = (0., 0.), 
+              margin: float = 0., margin_value: float = 0):
+  """
+  Create a sloped reward function about a given bounds range.
+
+  Args:
+    x (float): The value to evalulate.
+    bounds ((float, float)): A tuple of (lower, upper). If `x` falls between
+      `lower` and `upper`, then the the returned value is 1. Otherwise the
+      behavior is as described in the `Returns` section.
+    margin (float): How steeply to decline the reward function. If `margin`
+      is 0, then this tolerance essentially becomes a step function.
+    margin_value (float): What the value should be when `x` is at 1. Ignored
+       if `margin` == 0.
+  
+  Returns:
+    1 if `x` is within bounds. If margin == 0, then this function will return 
+    0 for all values of `x` that fall out of bounds. Otherwise, the slope
+    of the reward function decline is controlled by `margin` and `margin_value`.
+
+    This creates a gaussian-sloped decline, so the `margin_value` is the value
+    you want outputted when `x==1`. You can control the scaling of this slope
+    with `margin`.
+  """
   lower, upper = bounds
   if lower > upper:
     raise ValueError('Lower bound ({}) is greater than upper bound ({})'.format(
