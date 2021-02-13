@@ -92,46 +92,6 @@ class TestUprightReward(RewardBaseTestCase):
     self.assertEqual(reward.compute(), expected_reward)
 
 
-class TestHomePositionReward(RewardBaseTestCase):
-  def test_init(self):
-    robot_id = 0
-    r = rewards.HomePositionReward(robot_id)
-    r.client = self.client
-    self.assertEqual(robot_id, r._robot_id)
-
-  @mock.patch('pybullet.getBasePositionAndOrientation')
-  @mock.patch('pybullet.getEulerFromQuaternion')
-  def test_computation(self, mock_euler, mock_orien):
-    r = rewards.HomePositionReward(0)
-    r.client = self.client
-
-    def _mocked_reward(pos, orien):
-      mock_orien.return_value = pos, None
-      mock_euler.return_value = orien
-      return r.compute()
-
-    # Starting position
-    start_reward = _mocked_reward((0, 0, 0), (0, 0, 0))
-
-    # Rotated about the z-axis
-    z_rot_reward = _mocked_reward((0, 0, 0), (0, 0, .5))
-
-    # Semi standing up at an angle, 
-    standing_skewed_reward = _mocked_reward((0, 0, .15), (0, np.pi / 4, 0))
-
-    # Semi standing up completely flat (should be better than skewed)
-    standing_straight_reward = _mocked_reward((0, 0, .15), (0, 0, 0))
-
-    # Home position
-    home_reward = _mocked_reward(
-      (0, 0, rewards.HomePositionReward._quad_standing_height), (0, 0, 0))
-    
-    self.assertEqual(start_reward, z_rot_reward)
-    self.assertLess(start_reward, standing_straight_reward)
-    self.assertLess(standing_skewed_reward, standing_straight_reward)
-    self.assertLess(standing_straight_reward, home_reward)
-
-
 class TestSmallControlReward(unittest.TestCase):
   def test_init(self):
     margin = .25
