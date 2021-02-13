@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from numpy.testing._private.utils import requires_memory
 from pybullet_utils import bullet_client
 from typing import Tuple, List
 
@@ -189,6 +190,41 @@ class HomePositionReward(Reward):
     return 0.25 * orientation_reward + 0.75 * height_reward
 
     
+class FlatTorsoReward(Reward):
+  """Rewards the agent for keeping toros relatively flat."""
+  def __init__(self, robot_id: int, hard_margin: float = .1, 
+               soft_margin: float = 0.1):
+    """Create a new FlatTorsoReward
+
+    Args:
+      robot_id (int): the client-specific pybullet id 
+      hard_margin (float, optional): the margin where the perfect reward is 
+        given. For example, with a target speed of 0 and a margin of 0.1, a 
+        speed of 0.05 will still give a reward of 1. Defaults to .1.
+      soft_margin (float, optional): how long to have a downward sloping 
+        reward function. The value at the soft_margin is effectively 0. Defaults
+        to 0.1.
+    """
+    self._robot_id = robot_id
+    self._hard_margin = hard_margin
+    self._soft_margin = soft_margin
+
+  def compute(self) -> float:
+    """Compute the FlatTorsoReward for the current state.
+
+    Returns:
+      float: A real value in [0, 1], 1 if the horizontal velocity is near the
+        target velocity. The specific behavior of how "near" is defined is
+        in the constructor.
+    """
+    _, quat = self.client.getBasePositionAndOrientation(self._robot_id)
+    theta_x, theta_y, _ = self.client.getEulerFromQuaternion(quat)
+    rmse = math.sqrt(theta_x ** 2 + theta_y ** 2)
+    return tolerance(rmse, bounds=(-self._hard_margin, 
+                                              self._hard_margin),
+                     margin=self._soft_margin)
+
+
 class SmallControlReward(Reward):
   """Rewards the robot for making minimal movements.
   
