@@ -221,7 +221,7 @@ class FlatTorsoReward(Reward):
     theta_x, theta_y, _ = self.client.getEulerFromQuaternion(quat)
     rmse = math.sqrt(theta_x ** 2 + theta_y ** 2)
     return tolerance(rmse, bounds=(-self._hard_margin, 
-                                              self._hard_margin),
+                                   self._hard_margin),
                      margin=self._soft_margin)
 
 
