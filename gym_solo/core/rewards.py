@@ -119,6 +119,13 @@ class RewardFactory:
 
 
 class AdditiveReward(Reward):
+  """A reward that returns a linear combination of it's terms.
+
+  A simple reward wrapper that returns the sum of it's terms and coefficients. 
+  For example, if the AdditiveReward's terms are r1, r2, r3 with the 
+  respective coefficients c1, c2, c3; then the return value should be 
+  c1r1 + c2r2 + c3r3.
+  """
   def __init__(self):
     """Create a new Additive Reward."""
     self._terms: List[_WeightedReward] = []
@@ -154,11 +161,25 @@ class AdditiveReward(Reward):
 
 
 class MultiplicitiveReward(Reward):
+  """A reward that returns the product of its term and coefficient.
+
+  For example, if your MultiplicitiveReward's terms were r1, r2, r3 with a 
+  coefficient of c, then you can expect your return value to be c * r1 * r2 * r3
+  """
   def __init__(self, coefficient: float, *terms: Reward):
+    """Create a new MultiplicitiveReward.
+
+    Args:
+      coefficient (float): The value to be multiplied at the end of the
+        computation. Applied to the product of all of the sub-rewards.
+      terms (Reward): the subrewards to linearly combine.
+    """
     self._coeff = coefficient
     self._terms = terms
 
   def compute(self) -> float:
+    """Evaluate the current state for all of the rewards and return their 
+    product."""
     if not self._terms:
       raise ValueError('Need to register at least one term')
     return self._coeff * functools.reduce(lambda a, b: a * b, 
@@ -166,10 +187,12 @@ class MultiplicitiveReward(Reward):
 
   @property
   def client(self) -> bullet_client.BulletClient:
+    """Get the Pybullet instance for the reward. """
     return self._client
 
   @client.setter
   def client(self, client: bullet_client.BulletClient):
+    """Set the Pybullet instance for the rewards and all sub-rewards."""
     self._client = client
     
     for t in self._terms:

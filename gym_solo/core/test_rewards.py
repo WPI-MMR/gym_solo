@@ -147,6 +147,21 @@ class TestMultiplicitiveReward(unittest.TestCase):
 
     self.assertEqual(sub_r0.client, client)
     self.assertEqual(sub_r1.client, client)
+    self.assertEqual(r.client, client)
+
+  @parameterized.expand([
+    ('single_simple', 1, (1,), 1),
+    ('with_0_value', 1, (1, 2, 3, 0), 0),
+    ('with_0_coeff', 0, (1, 2, 3, 2), 0),
+    ('mixed_1_coeff', 1, (1, 2, 3, 2), 12),
+    ('mixed_float_coeff', 0.5, (1, 2, 3, 2), 6),
+    ('float_value', 0.5, (1, 0.5), 0.25),
+  ])
+  def test_compute(self, name, coeff, values, expected_result):
+    sub_r = (ReflectiveReward(v) for v in values)
+    r = rewards.MultiplicitiveReward(coeff, *sub_r)
+    r.client = 'client'
+    self.assertEqual(r.compute(), expected_result)
 
 
 class TestSmallControlReward(unittest.TestCase):
