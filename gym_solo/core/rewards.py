@@ -119,6 +119,12 @@ class RewardFactory:
 
 
 class AdditiveReward(Reward):
+  """A reward that returns a linear combination of its terms.
+
+  If the AdditiveReward's terms are the rewards r1, r2, r3 with their respecitive
+  coefficients c1, c2, and c3; then, the returned computation should be
+  c1r1 + c2r2 + c3r3.
+  """
   def __init__(self):
     """Create a new Additive Reward."""
     self._terms: List[_WeightedReward] = []

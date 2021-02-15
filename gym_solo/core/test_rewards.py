@@ -128,6 +128,11 @@ class TestAdditiveReward(unittest.TestCase):
       r.add_term(coeff, ReflectiveReward(value))
     self.assertEqual(expected_sum, r.compute())
 
+  def test_empty_terms(self):
+    r = rewards.AdditiveReward()
+    with self.assertRaises(ValueError):
+      r.compute()
+
 
 class TestSmallControlReward(unittest.TestCase):
   def test_init(self):
