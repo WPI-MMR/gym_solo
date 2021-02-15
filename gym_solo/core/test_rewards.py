@@ -121,7 +121,7 @@ class TestAdditiveReward(unittest.TestCase):
     ('multiple_mixed_coeff', [(1, 1), (.5, 1)], 1.5),
     ('multiple_with_0', [(1, 1), (.5, 1), (0, 50)], 1.5),
   ])
-  def test_register_and_compute(self, name, terms, expected_sum):
+  def test_compute(self, name, terms, expected_sum):
     r = rewards.AdditiveReward()
     r.client = 'fake_client'
     for coeff, value in terms:

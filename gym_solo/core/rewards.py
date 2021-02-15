@@ -83,6 +83,10 @@ class RewardFactory:
     self._client = client
     self._rewards: List[_WeightedReward] = []
 
+  @deprecation.deprecated(
+    details='This will probaby be removed for AdditiveReward down the line. For'
+            ' best future-proofing pratices, create an AdditiveReward and '
+            'register it with weight 1')
   def register_reward(self, weight: float, reward: Reward):
     """Register a reward to be computed per state.
 
