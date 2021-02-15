@@ -63,8 +63,6 @@ if __name__ == '__main__':
       user_joints = [env.client.readUserDebugParameter(param)
                      for param in joint_params]
       obs, reward, done, info = env.step(user_joints)
-      print('reward: {} flat: {} sc: {} no_move: {}'.format(
-        reward,flat.compute(), small_control.compute(), no_move.compute()))
       
       if cnt % 100 == 0:
         config.render_fov = env.client.readUserDebugParameter(
