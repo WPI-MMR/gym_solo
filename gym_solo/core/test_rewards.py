@@ -8,6 +8,7 @@ from unittest import mock
 
 import numpy as np
 import pybullet as p
+import math
 
 
 class TestRewardsFactory(unittest.TestCase):
@@ -91,54 +92,147 @@ class TestUprightReward(RewardBaseTestCase):
     self.assertEqual(reward.compute(), expected_reward)
 
 
-class TestHomePositionReward(RewardBaseTestCase):
+class TestSmallControlReward(unittest.TestCase):
   def test_init(self):
-    robot_id = 0
-    r = rewards.HomePositionReward(robot_id)
-    r.client = self.client
-    self.assertEqual(robot_id, r._robot_id)
+    margin = .25
+    robot_id = 5
 
-  @mock.patch('pybullet.getBasePositionAndOrientation')
-  @mock.patch('pybullet.getEulerFromQuaternion')
-  def test_computation(self, mock_euler, mock_orien):
-    r = rewards.HomePositionReward(0)
-    r.client = self.client
+    r = rewards.SmallControlReward(robot_id, margin=margin)
 
-    def _mocked_reward(pos, orien):
-      mock_orien.return_value = pos, None
-      mock_euler.return_value = orien
-      return r.compute()
+    self.assertEqual(r._margin, margin)
+    self.assertEqual(r._robot_id, robot_id)
 
-    # Starting position
-    start_reward = _mocked_reward((0, 0, 0), (0, 0, 0))
+  @parameterized.expand([
+    ('not_moving_no_margin', 0, 0, 1, 1),
+    ('little_movement_no_margin', 0, 1e-5, 0, 0),
+    ('little_movement_margin', 1, 1e-5, 0.9, 1),
+  ])
+  def test_computation(self, name, margin, average_jnt_velocity, min_val, 
+                       max_val):
+    robot_id = 69
+    r = rewards.SmallControlReward(robot_id, margin=margin)
+    r.client = mock.MagicMock()
+    r.client.getJointState.return_value = (None, average_jnt_velocity)
 
-    # Rotated about the z-axis
-    z_rot_reward = _mocked_reward((0, 0, 0), (0, 0, .5))
+    reward = r.compute()
+    self.assertGreaterEqual(reward, min_val),
+    self.assertLessEqual(reward, max_val)
 
-    # Semi standing up at an angle, 
-    standing_skewed_reward = _mocked_reward((0, 0, .15), (0, np.pi / 4, 0))
-
-    # Semi standing up completely flat (should be better than skewed)
-    standing_straight_reward = _mocked_reward((0, 0, .15), (0, 0, 0))
-
-    # Home position
-    home_reward = _mocked_reward(
-      (0, 0, rewards.HomePositionReward._quad_standing_height), (0, 0, 0))
     
-    self.assertEqual(start_reward, z_rot_reward)
-    self.assertLess(start_reward, standing_straight_reward)
-    self.assertLess(standing_skewed_reward, standing_straight_reward)
-    self.assertLess(standing_straight_reward, home_reward)
+class TestHorizontalMoveSpeedReward(unittest.TestCase):
+  def test_init(self):
+    robot_id = 5
+    target_speed = 0
+    hard_margin = 20
+    soft_margin = 12
+
+    r = rewards.HorizontalMoveSpeedReward(robot_id, target_speed, hard_margin,
+                                          soft_margin)
+    
+    self.assertEqual(robot_id, r._robot_id)
+    self.assertEqual(target_speed, r._target_speed)
+    self.assertEqual(hard_margin, r._hard_margin)
+    self.assertEqual(soft_margin, r._soft_margin)
+
+  @parameterized.expand([
+    ('perfectly_still', 0, 0, 0, 0, 1, 1),
+    ('within_hard_bounds', .5, 0, 1, 0, 1, 1),
+    ('at_hard_bounds', .5, 0, .5, 0, 1, 1),
+    ('close_to_hard_bounds_no_soft', .5, 0, .49, 0, 0, 0),
+    ('close_to_hard_bounds_soft', .5, 0, .49, 1, .95, 1),
+    ('at_soft', .5, 0, 0, .5, 0, 0.05),
+  ])
+  def test_computation(self, name, speed, target, hard, soft, low, high):
+    mock_client = mock.MagicMock()
+    mock_client.getBaseVelocity.return_value = (speed / math.sqrt(2), 
+                                                speed / math.sqrt(2), None), None
+    r = rewards.HorizontalMoveSpeedReward(1, target, hard, soft)
+    r.client = mock_client
+
+    val = r.compute()
+
+    self.assertGreaterEqual(val, low)
+    self.assertLessEqual(val, high)
+
+    
+class TestTorsoHeightReward(unittest.TestCase):
+  def test_init(self):
+    robot_id = 5
+    target_height = .3
+    hard_margin = 20
+    soft_margin = 12
+
+    r = rewards.TorsoHeightReward(robot_id, target_height, hard_margin, 
+                                  soft_margin)
+    
+    self.assertEqual(robot_id, r._robot_id)
+    self.assertEqual(target_height, r._target_height)
+    self.assertEqual(hard_margin, r._hard_margin)
+    self.assertEqual(soft_margin, r._soft_margin)
+    
+  @parameterized.expand([
+    ('perfect_stand', 1, 1, 0, 0, 1, 1),
+    ('within_hard_bounds', .75, 1, .5, 0, 1, 1),
+    ('at_hard_bounds', .5, 1, .5, 0, 1, 1),
+    ('close_to_hard_bounds_no_soft', .5, 0, .49, 0, 0, 0),
+    ('close_to_hard_bounds_soft', .5, 0, .49, 1, .95, 1),
+    ('at_soft', .5, 0, 0, .5, 0, 0.05),
+  ])
+  def test_computation(self, name, height, target, hard, soft, low, high):
+    mock_client = mock.MagicMock()
+    mock_client.getBasePositionAndOrientation.return_value = (None, None, height), None
+    r = rewards.TorsoHeightReward(1, target, hard, soft)
+    r.client = mock_client
+
+    val = r.compute()
+
+    self.assertGreaterEqual(val, low)
+    self.assertLessEqual(val, high)
+
+    
+class TestFlatTorsoReward(unittest.TestCase):
+  def test_init(self):
+    robot_id = 5
+    hard_margin = 20
+    soft_margin = 12
+
+    r = rewards.FlatTorsoReward(robot_id, hard_margin, soft_margin)
+    
+    self.assertEqual(robot_id, r._robot_id)
+    self.assertEqual(hard_margin, r._hard_margin)
+    self.assertEqual(soft_margin, r._soft_margin)
+
+  @parameterized.expand([
+    ('perfect_flat', 0, 0, 0, 1, 1),
+    ('within_hard_bounds', .75, 1, 0, 1, 1),
+    ('at_hard_bounds', .5, .5, 0, 1, 1),
+    ('close_to_hard_bounds_no_soft', .5, .49, 0, 0, 0),
+    ('close_to_hard_bounds_soft', .5, .49, 1, .95, 1),
+    ('at_soft', .5, 0, .5, 0, 0.05),
+  ])
+  def test_computation(self, name, theta, hard, soft, low, high):
+    mock_client = mock.MagicMock()
+    mock_client.getBasePositionAndOrientation.return_value = None, None
+    mock_client.getEulerFromQuaternion.return_value = (theta / math.sqrt(2),
+                                                       theta / math.sqrt(2),
+                                                       None)
+    r = rewards.FlatTorsoReward(1, hard, soft)
+    r.client = mock_client
+
+    val = r.compute()
+
+    self.assertGreaterEqual(val, low)
+    self.assertLessEqual(val, high)
 
 
 class TestRewardUtilities(unittest.TestCase):
   @parameterized.expand([
-    ('simple_in_bounds', 0, (-1, 1), 0, 0, 1),
-    ('simple_out_of_bounds', 2, (-1, 1), 0, 0, 0),
-    ('in_single_bound', 2, (2, 2), 0, 0, 1),
-    ('out_of_single_bound', 2.0001, (2, 2), 0, 0, 0),
-    ('at_bounds_edge', 1, (-1, 1), 1, 1, 1),
-    ('at_margin_default_value', 2, (-1, 1), 1, 0, 0),
+    ('simple_in_bounds', 0, (-1, 1), 0, 1e-6, 1),
+    ('simple_out_of_bounds', 2, (-1, 1), 0, 1e-6, 0),
+    ('in_single_bound', 2, (2, 2), 0, 1e-6, 1),
+    ('out_of_single_bound', 2.0001, (2, 2), 0, 1e-6, 0),
+    ('at_bounds_edge', 1, (-1, 1), 1, 1e-6, 1),
+    ('at_margin_default_value', 2, (-1, 1), 1, 1e-8, 1e-8),
     ('at_margin_margin_value', 2, (-1, 1), 1, .25, .25),
   ])
   def test_tolerance(self, name, x, bounds, margin, margin_value, 
@@ -168,7 +262,10 @@ class TestRewardUtilities(unittest.TestCase):
   def test_tolerance_margin_error(self):
     with self.assertRaises(ValueError):
       self.assertRaises(rewards.tolerance(0, margin=-1))
-    
+
+  def test_tolerance_margin_value_error(self):
+    with self.assertRaises(ValueError):
+      self.assertRaises(rewards.tolerance(0, margin_value=0))
 
 if __name__ == '__main__':
   unittest.main()

@@ -5,6 +5,7 @@ from typing import Tuple, List
 
 import numpy as np
 import pybullet as p
+import math
 
 from gym_solo import solo_types
 
@@ -146,55 +147,152 @@ class UprightReward(Reward):
     return self._fully_upright * y / self._fully_upright ** 2
 
 
-class HomePositionReward(Reward):
-  """Rewards the robot for being in the home position. Currently, this rewards
-  the robot for being orientated properly and being as tall as possible. This
-  will require some experimentation--if the robot ends up jumping to maximize
-  the reward, this might need to be modified to a more intelligent height 
-  reward.
-  """
-  # Found via experimentation--should be close enough to prevent any 
-  # non-trivial errors
-  _quad_standing_height = 0.3
-  _max_angle = np.pi
-
-  def __init__(self, robot_id: int):
-    """Create a new HomePositionReward.
+class FlatTorsoReward(Reward):
+  """Rewards the agent for keeping toros relatively flat."""
+  def __init__(self, robot_id: int, hard_margin: float = .1, 
+               soft_margin: float = 0.1):
+    """Create a new FlatTorsoReward
 
     Args:
-      robot_id (int): The PyBullet body id of the robot
+      robot_id (int): the client-specific pybullet id 
+      hard_margin (float, optional): the margin where the perfect reward is 
+        given. For example, with a target speed of 0 and a margin of 0.1, a 
+        speed of 0.05 will still give a reward of 1. Defaults to .1.
+      soft_margin (float, optional): how long to have a downward sloping 
+        reward function. The value at the soft_margin is effectively 0. Defaults
+        to 0.1.
     """
     self._robot_id = robot_id
+    self._hard_margin = hard_margin
+    self._soft_margin = soft_margin
 
   def compute(self) -> float:
-    """Compute the HomePositionReward for the current state. 
+    """Compute the FlatTorsoReward for the current state.
 
     Returns:
-      float: A real-valued in [0, 1], where 1 is in the home position.
+      float: A real value in [0, 1], 1 if the horizontal velocity is near the
+        target velocity. The specific behavior of how "near" is defined is
+        in the constructor.
     """
-    (unused_x, unused_y, z), quat = self.client.getBasePositionAndOrientation(
-      self._robot_id)
-    theta_x, theta_y, unused_z = np.array(
-      self.client.getEulerFromQuaternion(quat))
+    _, quat = self.client.getBasePositionAndOrientation(self._robot_id)
+    theta_x, theta_y, _ = self.client.getEulerFromQuaternion(quat)
+    rmse = math.sqrt(theta_x ** 2 + theta_y ** 2)
+    return tolerance(rmse, bounds=(-self._hard_margin, 
+                                   self._hard_margin),
+                     margin=self._soft_margin)
 
-    x_reward = (self._max_angle - abs(theta_x)) / (self._max_angle * 2)
-    y_reward = (self._max_angle - abs(theta_y)) / (self._max_angle * 2)
 
-    orientation_reward = x_reward + y_reward
-    height_reward = z / self._quad_standing_height
+class SmallControlReward(Reward):
+  """Rewards the robot for making minimal movements.
+  
+  This reward is useful for rewarding "stable" behavior down the line so that
+  the robot learns to make smoother and smaller movements.
+  """
+
+  def __init__(self, robot_id: int, margin: float = 1.):
+    """Create a new SmallControlReward.
+
+    Args:
+      robot_id (int): The pybullet ID of the robot
+      margin (float, optional): Control the steepness of the decline of the 
+        reward. Defaults to 1..
+    """
+    self._robot_id = robot_id
+    self._margin = margin
+
+  def compute(self) -> float:
+    """Compute the SmallControlReward for the current state.
+
+    Returns:
+      float: A real value in [0, 1], where 1 is if the robot is completely 
+        still.
+    """
+    joint_cnt = self.client.getNumJoints(self._robot_id)
+    joint_velocities = np.array([self.client.getJointState(self._robot_id, i)[1]
+                                 for i in range(joint_cnt)])
+    avg_angular_speed = np.average(np.abs(joint_velocities))
+    return tolerance(avg_angular_speed, margin=self._margin)
+
+
+class HorizontalMoveSpeedReward(Reward):
+  """Rewards the agent for maintaining a specific horizontal speed. """
+  def __init__(self, robot_id: int, target_speed: int, hard_margin: float = .1,
+               soft_margin: float = 0.1):
+    """Create a new HorizontalMoveSpeedReward
+
+    Args:
+      robot_id (int): the client-specific pybullet id 
+      target_speed (int): the target speed to maintain. The speed is computed
+        by the magnitude of the velocity vector.
+      hard_margin (float, optional): the margin where the perfect reward is 
+        given. For example, with a target speed of 0 and a margin of 0.1, a 
+        speed of 0.05 will still give a reward of 1. Defaults to .1.
+      soft_margin (float, optional): how long to have a downward sloping 
+        reward function. The value at the soft_margin is effectively 0. Defaults
+        to 0.1.
+    """
+    self._robot_id = robot_id
+    self._target_speed = target_speed
+    self._hard_margin = hard_margin
+    self._soft_margin = soft_margin
     
-    # Currently magic numbers for the relative weighting--will probably need
-    # to be tuned down the line
-    return 0.25 * orientation_reward + 0.75 * height_reward
+  def compute(self) -> float:
+    """Compute the HorizontalMoveSpeedReward for the current state.
+
+    Returns:
+      float: A real value in [0, 1], 1 if the horizontal velocity is near the
+        target velocity. The specific behavior of how "near" is defined is
+        in the constructor.
+    """
+    (vx, vy, _), _ = self.client.getBaseVelocity(self._robot_id)
+    speed = math.sqrt(vx ** 2 + vy ** 2)
+    return tolerance(speed, bounds=(self._target_speed - self._hard_margin, 
+                                    self._target_speed + self._hard_margin),
+                     margin=self._soft_margin)
+
+
+class TorsoHeightReward(Reward):
+  """Rewards the robot for maintaining a certain height with its Torso. """
+  def __init__(self, robot_id: int, target_height: int, hard_margin: float = .1,
+               soft_margin: float = 0.1):
+    """Create a new HorizontalMoveSpeedReward
+
+    Args:
+      robot_id (int): the client-specific pybullet id 
+      target_height (int): the target height to maintain. 
+      hard_margin (float, optional): the margin where the perfect reward is 
+        given. For example, with a target speed of 0 and a margin of 0.1, a 
+        speed of 0.05 will still give a reward of 1. Defaults to .1.
+      soft_margin (float, optional): how long to have a downward sloping 
+        reward function. The value at the soft_margin is effectively 0. Defaults
+        to 0.1.
+    """
+    self._robot_id = robot_id
+    self._target_height = target_height
+    self._hard_margin = hard_margin
+    self._soft_margin = soft_margin
+
+  def compute(self) -> float:
+    """Compute the TorsoHeightReward for the current state.
+
+    Returns:
+      float: A real value in [0, 1], 1 if the Torso's height is near the
+        target height. The specific behavior of how "near" is defined is in the 
+        constructor.
+    """
+    (_, _, z), _ = self.client.getBasePositionAndOrientation(self._robot_id)
+    return tolerance(z, bounds=(self._target_height - self._hard_margin,
+                                self._target_height + self._hard_margin),
+                     margin=self._soft_margin)
 
 
 def tolerance(x: float, bounds: Tuple[float, float] = (0., 0.), 
-              margin: float = 0., margin_value: float = 0):
+              margin: float = 0., margin_value: float = 1e-6):
   """
   Create a sloped reward function about a given bounds range.
 
   Args:
-    x (float): The value to evalulate.
+    x (float): The value to evaluate.
     bounds ((float, float)): A tuple of (lower, upper). If `x` falls between
       `lower` and `upper`, then the the returned value is 1. Otherwise the
       behavior is as described in the `Returns` section.
@@ -217,7 +315,11 @@ def tolerance(x: float, bounds: Tuple[float, float] = (0., 0.),
     raise ValueError('Lower bound ({}) is greater than upper bound ({})'.format(
                      lower, upper))
   if margin < 0:
-    raise ValueError('Magin must be non-negative: {}'.format(margin))
+    raise ValueError('Margin must be non-negative: {}'.format(margin))
+
+  if not 0 < margin_value <= 1:
+    raise ValueError('Margin value must be valued in (0, 1]: {}'.format(
+      margin_value))
 
   within_bounds = np.logical_and(lower <= x, x <= upper)
   if margin == 0:
