@@ -5,6 +5,7 @@ from typing import Tuple, List
 
 import numpy as np
 import pybullet as p
+import deprecation
 import math
 
 from gym_solo import solo_types
@@ -110,6 +111,41 @@ class RewardFactory:
       raise ValueError('Need to register at least one reward instance')
 
     return sum(wr.weight * wr.reward.compute() for wr in self._rewards)
+
+
+class AdditiveReward(Reward):
+  def __init__(self):
+    """Create a new Additive Reward."""
+    self._terms: List[_WeightedReward] = []
+
+  def add_term(self, coefficient: float, reward: Reward):
+    """Add a new term to the reward to be computed per state.
+
+    Args:
+      coefficient (float): The value to be mulitiplied to this reward when it is 
+        is combined linearly with the other rewards. The domain for this
+        value is (-∞, ∞).
+      reward (Reward): A Reward object which .compute() will be called on at
+        reward computation time.
+    """
+    reward.client = self.client
+    self._terms.append(_WeightedReward(reward=reward, weight=coefficient))
+
+  def compute(self) -> float:
+    """Evaluate the current state and get the combined reward.
+
+    Exceptions:
+      ValueError: If get_reward() is called with no registered rewards.
+
+    Returns:
+      float: The reward from the current state. Note that this reward is a 
+      combination of multiple atomic sub-rewards, as explained by the 
+      strategies earlier.
+    """
+    if not self._terms:
+      raise ValueError('Need to register at least one term')
+
+    return sum(wr.weight * wr.reward.compute() for wr in self._terms)
 
 
 class UprightReward(Reward):

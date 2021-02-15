@@ -92,6 +92,43 @@ class TestUprightReward(RewardBaseTestCase):
     self.assertEqual(reward.compute(), expected_reward)
 
 
+class TestAdditiveReward(unittest.TestCase):
+  def test_empty(self):
+    r = rewards.AdditiveReward()
+    self.assertListEqual(r._terms, [])
+
+    with self.assertRaises(ValueError):
+      r.compute()
+
+  def test_client_passthrough(self):
+    client = "client"
+    r = rewards.AdditiveReward()
+    r.client = client
+
+    sub_r0 = ReflectiveReward(1)
+    sub_r1 = ReflectiveReward(1)
+
+    r.add_term(1, sub_r0)
+    r.add_term(1, sub_r1)
+
+    self.assertEqual(sub_r0.client, client)
+    self.assertEqual(sub_r1.client, client)
+
+  @parameterized.expand([
+    ('single_simple', [(1, 1)], 1),
+    ('multiple_simple', [(1, 1), (1, 1)], 2),
+    ('multiple_float_coeff', [(.5, 1), (.5, 1)], 1),
+    ('multiple_mixed_coeff', [(1, 1), (.5, 1)], 1.5),
+    ('multiple_with_0', [(1, 1), (.5, 1), (0, 50)], 1.5),
+  ])
+  def test_register_and_compute(self, name, terms, expected_sum):
+    r = rewards.AdditiveReward()
+    r.client = 'fake_client'
+    for coeff, value in terms:
+      r.add_term(coeff, ReflectiveReward(value))
+    self.assertEqual(expected_sum, r.compute())
+
+
 class TestSmallControlReward(unittest.TestCase):
   def test_init(self):
     margin = .25
