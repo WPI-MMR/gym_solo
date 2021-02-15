@@ -7,5 +7,6 @@ setup(name='gym_solo',
       install_requires=['gym', 'pybullet'],
       extras_require={
         'test': ['parameterized', 'pyvirtualdisplay', 'xvfbwrapper']
-      }
+      },
+      include_package_data=True,
 )
