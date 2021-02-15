@@ -6,6 +6,7 @@ from typing import Tuple, List
 import numpy as np
 import pybullet as p
 import deprecation
+import functools
 import math
 
 from gym_solo import solo_types
@@ -150,6 +151,18 @@ class AdditiveReward(Reward):
       raise ValueError('Need to register at least one term')
 
     return sum(wr.weight * wr.reward.compute() for wr in self._terms)
+
+
+class MultiplicitiveReward(Reward):
+  def __init__(self, coefficient: float, *terms: Reward):
+    self._coeff = coefficient
+    self._terms = terms
+
+  def compute(self) -> float:
+    if not self._terms:
+      raise ValueError('Need to register at least one term')
+    return self._coeff * functools.reduce(lambda a, b: a * b, 
+                                          [t.compute() for t in self._terms])
 
 
 class UprightReward(Reward):
