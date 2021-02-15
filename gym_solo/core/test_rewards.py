@@ -128,10 +128,25 @@ class TestAdditiveReward(unittest.TestCase):
       r.add_term(coeff, ReflectiveReward(value))
     self.assertEqual(expected_sum, r.compute())
 
-  def test_empty_terms(self):
-    r = rewards.AdditiveReward()
+
+class TestMultiplicitiveReward(unittest.TestCase):
+  def test_empty(self):
+    r = rewards.MultiplicitiveReward(0)
+    self.assertTupleEqual(r._terms, ())
+
     with self.assertRaises(ValueError):
       r.compute()
+
+  def test_client_passthrough(self):
+    client = "client"
+    sub_r0 = ReflectiveReward(1)
+    sub_r1 = ReflectiveReward(1)
+
+    r = rewards.MultiplicitiveReward(1, sub_r0, sub_r1)
+    r.client = client
+
+    self.assertEqual(sub_r0.client, client)
+    self.assertEqual(sub_r1.client, client)
 
 
 class TestSmallControlReward(unittest.TestCase):

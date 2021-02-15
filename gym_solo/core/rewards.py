@@ -119,12 +119,6 @@ class RewardFactory:
 
 
 class AdditiveReward(Reward):
-  """A reward that returns a linear combination of its terms.
-
-  If the AdditiveReward's terms are the rewards r1, r2, r3 with their respecitive
-  coefficients c1, c2, and c3; then, the returned computation should be
-  c1r1 + c2r2 + c3r3.
-  """
   def __init__(self):
     """Create a new Additive Reward."""
     self._terms: List[_WeightedReward] = []
@@ -169,6 +163,17 @@ class MultiplicitiveReward(Reward):
       raise ValueError('Need to register at least one term')
     return self._coeff * functools.reduce(lambda a, b: a * b, 
                                           [t.compute() for t in self._terms])
+
+  @property
+  def client(self) -> bullet_client.BulletClient:
+    return self._client
+
+  @client.setter
+  def client(self, client: bullet_client.BulletClient):
+    self._client = client
+    
+    for t in self._terms:
+      t.client = self._client
 
 
 class UprightReward(Reward):
