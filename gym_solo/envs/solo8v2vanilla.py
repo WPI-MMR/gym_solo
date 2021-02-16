@@ -4,18 +4,12 @@ from gym.spaces import space
 
 import numpy as np
 import pybullet as p
-import pybullet_data as pbd
-import pybullet_utils.bullet_client as bc
-import random
 import time
 
 import gym
 from gym import spaces
 
 from gym_solo.core.configs import Solo8BaseConfig
-from gym_solo.core import obs
-from gym_solo.core import rewards
-from gym_solo.core import termination as terms
 from gym_solo.envs import Solo8BaseEnv
 
 from gym_solo import solo_types
