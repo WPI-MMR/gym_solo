@@ -19,14 +19,20 @@ if __name__ == '__main__':
   env.obs_factory.register_observation(obs.TorsoIMU(env.robot))
   env.termination_factory.register_termination(terms.PerpetualTermination())
 
-  flat = rewards.FlatTorsoReward(env.robot, hard_margin=.1, soft_margin=.1)
-  small_control = rewards.SmallControlReward(env.robot, margin=.1)
-  no_move = rewards.HorizontalMoveSpeedReward(env.robot, 0, hard_margin=.1, 
-                                              soft_margin=.1)
+  flat = rewards.FlatTorsoReward(env.robot, hard_margin=.1, soft_margin=np.pi)
+  height = rewards.TorsoHeightReward(env.robot, 0.33698, 0.025, 0.15)
+  
+  small_control = rewards.SmallControlReward(env.robot, margin=10)
+  no_move = rewards.HorizontalMoveSpeedReward(env.robot, 0, hard_margin=.5, 
+                                              soft_margin=3)
+  
+  stand = rewards.AdditiveReward()
+  stand.client = env.client
+  stand.add_term(0.5, flat)
+  stand.add_term(0.5, height)
 
-  env.reward_factory.register_reward(.33, flat)
-  env.reward_factory.register_reward(.33, small_control)
-  env.reward_factory.register_reward(.33, no_move)
+  home_pos = rewards.MultiplicitiveReward(1, stand, small_control, no_move)
+  env.reward_factory.register_reward(1, home_pos)
 
   joint_params = []
   num_joints = env.client.getNumJoints(env.robot)
@@ -63,6 +69,9 @@ if __name__ == '__main__':
       user_joints = [env.client.readUserDebugParameter(param)
                      for param in joint_params]
       obs, reward, done, info = env.step(user_joints)
+
+      print('flat: {:.2f} height: {:.2f} sc: {:.2f} nv: {:.2f} overall: {:.2f}'.format(
+        flat.compute(), height.compute(), small_control.compute(), no_move.compute(), reward))
       
       if cnt % 100 == 0:
         config.render_fov = env.client.readUserDebugParameter(

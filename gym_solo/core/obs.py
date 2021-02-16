@@ -200,7 +200,9 @@ class TorsoIMU(Observation):
   # TODO: Add angular acceleration to support production IMUs
   labels: List[str] = ['θx', 'θy', 'θz', 'vx', 'vy', 'vz', 'wx', 'wy', 'wz']
 
-  def __init__(self, body_id: int, degrees: bool = False):
+  def __init__(self, body_id: int, degrees: bool = False, 
+               max_lin_velocity: float = 15, 
+               max_angular_velocity: float = 10.):
     """Create a new TorsoIMU observation
 
     Args:
@@ -210,6 +212,8 @@ class TorsoIMU(Observation):
     """
     self.robot = body_id
     self._degrees = degrees
+    self._max_lin = max_lin_velocity
+    self._max_ang = max_angular_velocity
 
   @property
   def observation_space(self) -> spaces.Box:
@@ -227,11 +231,11 @@ class TorsoIMU(Observation):
     angle_min = -180. if self._degrees else -np.pi
     angle_max = 180. if self._degrees else np.pi
 
-    lower = [angle_min, angle_min, angle_min,  # Orientation
-             -np.inf, -np.inf, -np.inf,        # Linear Velocity
-             -np.inf, -np.inf, -np.inf]        # Angular Velocity
+    lower = [angle_min, angle_min, angle_min,                 # Orientation
+             -self._max_lin, -self._max_lin, -self._max_lin,  # Linear Velocity
+             -self._max_ang, -self._max_ang, -self._max_ang]  # Angular Velocity
 
-    upper = [angle_max, angle_max, angle_max,  # Same as above
+    upper = [angle_max, angle_max, angle_max,                 # Same as above
              np.inf, np.inf, np.inf,          
              np.inf, np.inf, np.inf]         
 
@@ -265,7 +269,8 @@ class MotorEncoder(Observation):
   """Get the position of the all the joints
   """
 
-  def __init__(self, body_id: int, degrees: bool = False):
+  def __init__(self, body_id: int, degrees: bool = False, 
+               max_rotation: float = None):
     """Create a new MotorEncoder observation
 
     Args:

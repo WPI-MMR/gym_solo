@@ -374,7 +374,7 @@ class TorsoHeightReward(Reward):
 
 
 def tolerance(x: float, bounds: Tuple[float, float] = (0., 0.), 
-              margin: float = 0., margin_value: float = 1e-6):
+              margin: float = 0., margin_value: float = .1):
   """
   Create a sloped reward function about a given bounds range.
 
