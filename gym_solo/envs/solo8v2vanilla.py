@@ -80,8 +80,7 @@ class Solo8VanillaEnv(Solo8BaseEnv):
     """The agent takes a step in the environment.
 
     Args:
-      action (List[float]): The torques applied to the motors in N•m. Note
-        len(action) == the # of actuator
+      action (List[float]): The positions to set the motor to.
 
     Returns:
       Tuple[solo_types.obs, float, bool, Dict[Any, Any]]: A tuple of the next
@@ -89,10 +88,7 @@ class Solo8VanillaEnv(Solo8BaseEnv):
         terminates, and an info dict for misc diagnostic details.
     """
     if self._normalize:
-      a = np.array(action)
-      low = self._action_space.low
-      hi = self._action_space.high
-      action = low + ((a + 1) * (hi - low)) / 2
+      action = np.array(action) * self._action_space.high
     
     self.client.setJointMotorControlArray(
       self.robot, np.arange(self.action_space.shape[0]), p.POSITION_CONTROL, 
