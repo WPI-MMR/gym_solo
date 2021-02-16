@@ -346,7 +346,7 @@ class MotorEncoder(Observation):
 
   def compute(self) -> solo_types.obs:
     """Computes the motor position values all the joints of the robot 
-    for the current state.
+    for the current state. Clipped to the max allowed motor rotations, if set.
 
     Returns:
       solo_types.obs: The observation extracted from pybullet
@@ -356,5 +356,8 @@ class MotorEncoder(Observation):
 
     if self._degrees:
       joint_values = np.degrees(joint_values)
+
+    if self._max_rot:
+      joint_values = np.clip(joint_values, -self._max_rot, self._max_rot)
       
     return joint_values

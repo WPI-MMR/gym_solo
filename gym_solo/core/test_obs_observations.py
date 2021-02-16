@@ -280,6 +280,26 @@ class TestMotorEncoder(ObservationBaseTestCase):
     o = self.build_obs(dummy_robot_id, degrees=degrees)
     np.testing.assert_allclose(o.compute(), ground_truth)
 
+  def test_clipping(self):
+    joints = 12
+    max_rot = .5
+
+    mock_client = mock.MagicMock()
+    mock_client.getNumJoints.return_value = joints
+
+    o = self.build_obs(0, max_rotation=max_rot)
+    o.client = mock_client
+
+    with self.subTest('positive values'):
+      mock_client.getJointState.return_value = 69, None
+      np.testing.assert_array_equal(
+        o.compute(), np.array([max_rot] * joints, dtype=np.float32))
+
+    with self.subTest('negative values'):
+      mock_client.getJointState.return_value = -69, None
+      np.testing.assert_array_equal(
+        o.compute(), np.array([-max_rot] * joints, dtype=np.float32))
+
 
 if __name__ == '__main__':
   unittest.main()
