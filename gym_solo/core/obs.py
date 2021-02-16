@@ -209,11 +209,23 @@ class TorsoIMU(Observation):
       body_id (int): The PyBullet body id for the robot.
       degrees (bool, optional): Whether or not to return angles in degrees. 
         Defaults to False.
+      max_lin_velocity (float, optional): The maximum linear velocity read by
+        TorsoIMU. Any torso reading made past this will just get clamped. The
+        unit is arbritary, but it is recommended that this is experimentally
+        found. Defaults to 10.
+      max_ang_velocity (float, optional): The maximum angular velocity read by
+        TorsoIMU. Any torso reading made past this will just get clamped. The
+        unit is arbritary, but it is recommended that this is experimentally
+        found. Units are in rad/s unless degrees == True. Deaults to 10.
     """
     self.robot = body_id
     self._degrees = degrees
     self._max_lin = max_lin_velocity
     self._max_ang = max_angular_velocity
+
+    self._low = None
+    self._high = None
+    self.observation_space # Populate the bounds incase it dosn't get called
 
   @property
   def observation_space(self) -> spaces.Box:
@@ -236,8 +248,12 @@ class TorsoIMU(Observation):
              -self._max_ang, -self._max_ang, -self._max_ang]  # Angular Velocity
 
     upper = [angle_max, angle_max, angle_max,                 # Same as above
-             np.inf, np.inf, np.inf,          
-             np.inf, np.inf, np.inf]         
+             self._max_lin, self._max_lin, self._max_lin,          
+             self._max_ang, self._max_ang, self._max_ang]         
+
+    if not (self._low and self._high):
+      self._low = lower
+      self._high = upper
 
     return spaces.Box(low=np.array(lower), high=np.array(upper))
 
@@ -246,7 +262,8 @@ class TorsoIMU(Observation):
 
     Returns:
       solo_types.obs: The observation for the current state (accessed via
-        pybullet)
+        pybullet). Note the values are bounded by self.observation_space even
+        if the true value is greater than that (i.e. the observation is clipped)
     """
     _, orien_quat = self.client.getBasePositionAndOrientation(self.robot)
 
@@ -261,8 +278,8 @@ class TorsoIMU(Observation):
       orien = np.degrees(orien)
       v_ang = np.degrees(v_ang)
 
-    return np.concatenate([orien, v_lin, v_ang])
-
+    raw_values = np.concatenate([orien, v_lin, v_ang])
+    return np.clip(raw_values, self._low, self._high)
 
 
 class MotorEncoder(Observation):
