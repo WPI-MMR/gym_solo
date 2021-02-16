@@ -294,9 +294,14 @@ class MotorEncoder(Observation):
       body_id (int): The PyBullet body id for the robot.
       degrees (bool, optional): Whether or not to return angles in degrees. 
         Defaults to False.
+      max_rotation (float, optional): Artificially limit the range of the 
+        motor encoders. Note then that the motor encoder observation space
+        then becomes (low=[-max_rotation] * joints, high=[max_rotation] * joints).
+        Defaults to the max values as per the URDF.
     """
     self.robot = body_id
     self._degrees = degrees
+    self._max_rot = max_rotation
 
   @property
   def _num_joints(self):
@@ -306,11 +311,14 @@ class MotorEncoder(Observation):
   def observation_space(self) -> spaces.Space:
     """Gets the observation space for the joints
 
-    Returns:
+    Returns::
       spaces.Space: The observation space corresponding to the labels
     """
-    lower, upper = [], []
+    if self._max_rot:
+      return spaces.Box(low=-self._max_rot, high=self._max_rot, 
+                        shape=(self._num_joints, ))
 
+    lower, upper = [], []
     for joint in range(self._num_joints):
       joint_info = self.client.getJointInfo(self.robot, joint)
       lower.append(joint_info[8])

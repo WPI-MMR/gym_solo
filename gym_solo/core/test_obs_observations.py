@@ -6,7 +6,6 @@ from parameterized import parameterized
 from pybullet_utils import bullet_client
 from unittest import mock
 
-import math
 import numpy as np
 import pybullet as p
 
@@ -171,13 +170,16 @@ class TestMotorEncoder(ObservationBaseTestCase):
   def test_attributes(self, name, degrees, mock_num_joints):
     num_joints = 12
     dummy_robot_id = 0
+    max_motor_rot = 69
     mock_num_joints.return_value = num_joints
 
-    o = self.build_obs(dummy_robot_id, degrees=degrees)
+    o = self.build_obs(dummy_robot_id, degrees=degrees, 
+                       max_rotation=max_motor_rot)
     
     self.assertEqual(o.robot, dummy_robot_id)
     self.assertEqual(o._degrees, degrees)
     self.assertEqual(o._num_joints, num_joints)
+    self.assertEqual(o._max_rot, max_motor_rot)
 
   @parameterized.expand([
     ("default", False),
@@ -206,6 +208,22 @@ class TestMotorEncoder(ObservationBaseTestCase):
 
     np.testing.assert_allclose(o.observation_space.low, lower_bound)
     np.testing.assert_allclose(o.observation_space.high, upper_bound)
+
+  def test_artifical_obs_space(self):
+    joints = 12
+    max_rot = 6.9
+    mock_client = mock.MagicMock()
+    mock_client.getNumJoints.return_value = joints
+
+    o = self.build_obs(0, max_rotation=max_rot)
+    o.client = mock_client
+
+    obs_space = o.observation_space
+
+    np.testing.assert_array_equal(
+      obs_space.low, np.array([-max_rot] * joints, dtype=np.float32))
+    np.testing.assert_array_equal(
+      obs_space.high, np.array([max_rot] * joints, dtype=np.float32))
 
   @mock.patch('pybullet.getJointInfo')
   @mock.patch('pybullet.getNumJoints')
