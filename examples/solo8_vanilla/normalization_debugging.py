@@ -1,5 +1,5 @@
 """A demo for the Solo8 v2 Vanilla to mess around with normalized vs 
-unormalized actions and observations.
+unnormalized actions and observations.
 """
 
 import gym
@@ -8,17 +8,27 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from gym_solo.envs import solo8v2vanilla
-from gym_solo.core import obs
+from gym_solo.core import obs as solo_obs
 from gym_solo.core import rewards
 from gym_solo.core import termination as terms
 
 
+fig = plt.figure()
+obs_ax = fig.add_subplot(1, 2, 1)
+rewards_ax = fig.add_subplot(1, 2, 2)
+
+
 if __name__ == '__main__':
   config = solo8v2vanilla.Solo8VanillaConfig()
-  env: solo8v2vanilla.Solo8VanillaEnv = gym.make('solo8vanilla-v0', use_gui=True, 
-                                                 config=config)
+  config.max_motor_rotation = np.pi  / 2
 
-  env.obs_factory.register_observation(obs.TorsoIMU(env.robot))
+  env: solo8v2vanilla.Solo8VanillaEnv = gym.make('solo8vanilla-v0', use_gui=True, 
+                                                 config=config, 
+                                                 normalize_observations=True)
+
+  env.obs_factory.register_observation(solo_obs.TorsoIMU(env.robot))
+  env.obs_factory.register_observation(solo_obs.MotorEncoder(
+    env.robot, max_rotation=config.max_motor_rotation))
   env.termination_factory.register_termination(terms.PerpetualTermination())
 
   flat = rewards.FlatTorsoReward(env.robot, hard_margin=.1, soft_margin=np.pi)
@@ -43,7 +53,7 @@ if __name__ == '__main__':
     joint_params.append(env.client.addUserDebugParameter(
       'Joint {}'.format(
         env.client.getJointInfo(env.robot, joint)[1].decode('UTF-8')),
-      -2 * np.pi, 2 * np.pi, 0))
+      -config.max_motor_rotation, config.max_motor_rotation, 0))
 
   camera_params = {
     'fov': env.client.addUserDebugParameter('fov', 30, 150, 80),
@@ -52,7 +62,6 @@ if __name__ == '__main__':
     'pitch': env.client.addUserDebugParameter('pitch', -90, 90, -10),
     'roll': env.client.addUserDebugParameter('roll', -90, 90, 0),
   }
-  
 
   try:
     print("""\n
@@ -72,9 +81,6 @@ if __name__ == '__main__':
                      for param in joint_params]
       obs, reward, done, info = env.step(user_joints)
 
-      print('flat: {:.2f} height: {:.2f} sc: {:.2f} nv: {:.2f} overall: {:.2f}'.format(
-        flat.compute(), height.compute(), small_control.compute(), no_move.compute(), reward))
-      
       if cnt % 100 == 0:
         config.render_fov = env.client.readUserDebugParameter(
           camera_params['fov'])
@@ -88,10 +94,21 @@ if __name__ == '__main__':
           camera_params['roll'])
         env.render()
 
-      plt.hist(obs)
-      plt.pause(env.config.dt)
+      obs_ax.cla()
+      obs_ax.set_title('Observations')
+      obs_ax.bar(np.arange(len(obs)), obs, tick_label=info['labels'])
+
+      rewards_ax.cla()
+      rewards_ax.set_title('Rewards')
+      rewards_ax.bar(np.arange(5), [flat.compute(),
+                                    height.compute(),
+                                    small_control.compute(),
+                                    no_move.compute(),
+                                    reward], 
+                    tick_label=('flat', 'height', 'small control', 'no move',
+                                'overall'))
+
+      plt.pause(1e-8)
       cnt += 1
   except KeyboardInterrupt:
     pass
-
-  plt.show()
