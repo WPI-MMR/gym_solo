@@ -92,7 +92,7 @@ class Solo8VanillaEnv(Solo8BaseEnv):
       a = np.array(action)
       low = self._action_space.low
       hi = self._action_space.high
-      action = low + ((a + 1) * (hi - low)) / 2
+      action = low + (((a + 1) * (hi - low)) / 2)
     
     self.client.setJointMotorControlArray(
       self.robot, np.arange(self.action_space.shape[0]), p.POSITION_CONTROL, 
