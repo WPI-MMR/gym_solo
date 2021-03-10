@@ -19,13 +19,15 @@ class Solo8BaseEnv(ABC, gym.Env):
   """Solo 8 abstract base environment."""
   metadata = {'render.modes': ['rgb_array']}
 
-  def __init__(self, config: configs.Solo8BaseConfig, use_gui: bool):
+  def __init__(self, config: configs.Solo8BaseConfig, use_gui: bool,
+               normalize_observations: bool = False):
     """Create a solo8 env.
 
     Args:
       config (configs.Solo8BaseConfig): The SoloConfig. Defaults to None.
-      use_gui (bool): Whether or not to show the pybullet GUI. Defaults to 
-        False.
+      use_gui (bool): Whether or not to show the pybullet GUI.
+      normalize_observation (bool): Normalize the observations? Defaults to
+        True
     """
     self.config = config
 
@@ -45,7 +47,8 @@ class Solo8BaseEnv(ABC, gym.Env):
     self.plane = self.client.loadURDF('plane.urdf')
     self.load_bodies()
 
-    self.obs_factory = obs.ObservationFactory(self.client)
+    self.obs_factory = obs.ObservationFactory(self.client, 
+                                              normalize=normalize_observations)
     self.reward_factory = rewards.RewardFactory(self.client)
     self.termination_factory = terms.TerminationFactory()
 

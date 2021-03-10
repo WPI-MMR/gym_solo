@@ -98,6 +98,25 @@ class TestObservationFactory(unittest.TestCase):
                                   np.array([1, 2, 5, 6]))
     self.assertListEqual(labels, ['1', '2', '5', '6'])
 
+  def test_get_obs_normalized(self):
+    of = obs.ObservationFactory(self.client, normalize=True)
+
+    test_obs1 = CompliantObs(None)
+    test_obs1.compute = lambda: np.array([1.5, 1.5])
+    of.register_observation(test_obs1)
+
+    test_obs2 = CompliantObs(None)
+    test_obs2.compute = lambda: np.array([0., 0.])
+    of.register_observation(test_obs2)
+
+    test_obs3 = CompliantObs(None)
+    test_obs3.compute = lambda: np.array([3., 3.])
+    of.register_observation(test_obs3)
+
+    observations, _ = of.get_obs()
+    np.testing.assert_array_equal(observations, 
+                                  np.array([0., 0., -1., -1., 1., 1.]))
+
   def test_get_observation_space_no_observations(self):
     of = obs.ObservationFactory(self.client)
     with self.assertRaises(ValueError):
@@ -142,6 +161,19 @@ class TestObservationFactory(unittest.TestCase):
       self.assertEqual(of.get_observation_space(generate=True),
                        spaces.Box(low=np.array([0., 0., 5., 6.]),
                                   high=np.array([3., 3., 5., 6.])))
+
+  def test_get_observation_space_normalized(self):
+    of = obs.ObservationFactory(self.client, normalize=True)
+    of.register_observation(CompliantObs(None))
+
+    test_obs = CompliantObs(None)
+    test_obs.observation_space = spaces.Box(low=np.array([5., 6.]), 
+                                            high=np.array([5., 6.]))
+    of.register_observation(test_obs)
+
+    self.assertEqual(of.get_observation_space(),
+                      spaces.Box(low=np.array([-1., -1., -1., -1.]),
+                                high=np.array([1., 1., 1., 1.])))
 
 
 if __name__ == '__main__':

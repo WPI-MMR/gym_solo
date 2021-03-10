@@ -93,7 +93,8 @@ class Observation(ABC):
 
 
 class ObservationFactory:
-  def __init__(self, client: bullet_client.BulletClient):
+  def __init__(self, client: bullet_client.BulletClient, 
+               normalize: bool = False):
     """Create a new Observation Factory.
 
     Args:
@@ -103,6 +104,7 @@ class ObservationFactory:
     self._client = client
     self._observations = []
     self._obs_space = None
+    self._normalize = normalize
 
   def register_observation(self, obs: Observation):
     """Add an observation to be computed.
@@ -140,8 +142,16 @@ class ObservationFactory:
     all_labels = []
     
     for obs in self._observations:
-      all_obs.append(obs.compute())
       all_labels.append(obs.labels)
+
+      values = obs.compute()
+      if self._normalize:
+        a = np.array(values)
+        low = obs.observation_space.low
+        hi = obs.observation_space.high
+        values = ((2 * (a - low)) / (hi - low)) - 1
+
+      all_obs.append(values)
 
     observations = np.concatenate(all_obs)
     labels = [l for lbl in all_labels for l in lbl]
@@ -173,7 +183,10 @@ class ObservationFactory:
       lower.extend(obs.observation_space.low)
       upper.extend(obs.observation_space.high)
 
-    self._obs_space = spaces.Box(low=np.array(lower), high=np.array(upper))
+    if self._normalize:
+      self._obs_space = spaces.Box(low=-1, high=1, shape=(len(lower),))
+    else:
+      self._obs_space = spaces.Box(low=np.array(lower), high=np.array(upper))
     return self._obs_space
 
 
