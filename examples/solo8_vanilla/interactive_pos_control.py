@@ -13,11 +13,20 @@ from gym_solo.core import termination as terms
 
 if __name__ == '__main__':
   config = solo8v2vanilla.Solo8VanillaConfig()
-  env: solo8v2vanilla.Solo8VanillaEnv = gym.make('solo8vanilla-v0', use_gui=True, realtime=True, config=config)
+  env: solo8v2vanilla.Solo8VanillaEnv = gym.make('solo8vanilla-v0', use_gui=True, 
+                                                 realtime=True, config=config)
 
   env.obs_factory.register_observation(obs.TorsoIMU(env.robot))
-  env.reward_factory.register_reward(1,rewards.UprightReward(env.robot))
   env.termination_factory.register_termination(terms.PerpetualTermination())
+
+  flat = rewards.FlatTorsoReward(env.robot, hard_margin=.1, soft_margin=.1)
+  small_control = rewards.SmallControlReward(env.robot, margin=.1)
+  no_move = rewards.HorizontalMoveSpeedReward(env.robot, 0, hard_margin=.1, 
+                                              soft_margin=.1)
+
+  env.reward_factory.register_reward(.33, flat)
+  env.reward_factory.register_reward(.33, small_control)
+  env.reward_factory.register_reward(.33, no_move)
 
   joint_params = []
   num_joints = env.client.getNumJoints(env.robot)
