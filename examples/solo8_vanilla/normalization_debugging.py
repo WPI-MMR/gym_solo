@@ -31,8 +31,8 @@ if __name__ == '__main__':
     env.robot, max_rotation=config.max_motor_rotation))
   env.termination_factory.register_termination(terms.PerpetualTermination())
 
-  flat = rewards.FlatTorsoReward(env.robot, hard_margin=.1, soft_margin=np.pi)
-  height = rewards.TorsoHeightReward(env.robot, 0.33698, 0.025, 0.15)
+  flat = rewards.FlatTorsoReward(env.robot, hard_margin=.05, soft_margin=np.pi)
+  height = rewards.TorsoHeightReward(env.robot, 0.33698, 0.01, 0.15)
   
   small_control = rewards.SmallControlReward(env.robot, margin=10)
   no_move = rewards.HorizontalMoveSpeedReward(env.robot, 0, hard_margin=.5, 
