@@ -28,9 +28,6 @@ if __name__ == '__main__':
           =============================================
           """)
 
-    # env.reset()
-    num_bodies = env.client.getNumBodies()
-    print(f'num bodies: {num_bodies}')
     while True:
       pos = float(input('Which position do you want to set all the joints to?: '))
       if pos == 69.:
