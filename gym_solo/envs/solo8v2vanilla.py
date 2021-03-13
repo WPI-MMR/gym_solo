@@ -107,7 +107,18 @@ class Solo8VanillaEnv(Solo8BaseEnv):
     Returns:
       solo_types.obs: The initial observation of the space.
     """
-    self.client.removeBody(self.robot)
+    self.client.resetSimulation()
+    self.client.setGravity(*self.config.gravity)
+
+    if self.config.dt:
+      self.client.setPhysicsEngineParameter(fixedTimeStep=self.config.dt, 
+                                            numSubSteps=1)
+    else:
+      self.client.setRealTimeSimulation(1)
+
+    self.client_configuration()
+
+    self.plane = self.client.loadURDF('plane.urdf')
     self.load_bodies()
 
     positions = [self.config.starting_joint_pos[j] 
