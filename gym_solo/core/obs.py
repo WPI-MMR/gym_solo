@@ -149,7 +149,7 @@ class ObservationFactory:
         a = np.array(values)
         low = obs.observation_space.low
         hi = obs.observation_space.high
-        values = (2 * (a - low)) / (hi - low) - 1
+        values = ((2 * (a - low)) / (hi - low)) - 1
 
       all_obs.append(values)
 
