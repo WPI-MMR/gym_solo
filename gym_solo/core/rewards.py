@@ -447,9 +447,12 @@ def linear(x: float, target: float, span: float, symmetric = False) -> float:
       span evaluates to 0. Every value in between is evalulated as the linear
       interpolation between `target` and `span`.
   """
+  if span == 0:
+    return 1. if x == target else 0.
+
   x_delta = x - target
   
-  if abs(x_delta) > span:
+  if abs(x_delta) > abs(span):
     return 0.
   
   ratio = x_delta / span

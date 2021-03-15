@@ -339,5 +339,19 @@ class TestRewardUtilities(unittest.TestCase):
     with self.assertRaises(ValueError):
       self.assertRaises(rewards.tolerance(0, margin_value=0))
 
+  @parameterized.expand([
+    ('at_target', 5, 0, False, 5, 1.),
+    ('at_span', 5, 2, False, 7, 0.),
+    ('negative_span', 5, -4, False, 2, 0.25),
+    ('past_span_positive', 5, 4, False, 10, 0),
+    ('past_span_negative', 5, -4, False, 0, 0),
+    ('in_span_positive_symmetric', 5, 4, True, 6, 0.75),
+    ('in_flipped_span_positive_symmetric', 5, 4, True, 4, 0.75),
+    ('in_span_negative_symmetric', 5, -4, True, 4, 0.75),
+    ('in_flipped_span_negative_symmetric', 5, -4, True, 6, 0.75),
+  ])
+  def test_linear(self, name, target, span, symmetric, x, expected):
+    self.assertEqual(rewards.linear(x, target, span, symmetric), expected)
+
 if __name__ == '__main__':
   unittest.main()
