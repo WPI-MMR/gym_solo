@@ -307,13 +307,13 @@ class TestRewardUtilities(unittest.TestCase):
     ('at_margin_default_value', 2, (-1, 1), 1, 1e-8, 1e-8),
     ('at_margin_margin_value', 2, (-1, 1), 1, .25, .25),
   ])
-  def test_tolerance(self, name, x, bounds, margin, margin_value, 
+  def test_gaussian(self, name, x, bounds, margin, margin_value, 
                      expected_value):
     # Floating point issuses cause flakiness when doing an exact comparision
     self.assertAlmostEqual(rewards.tolerance(x, bounds, margin, margin_value),
                      expected_value)
 
-  def test_tolerance_relative(self):
+  def test_gaussian_relative(self):
     bounds = (0,0)
     margin = 1.
     margin_value = .25
@@ -327,15 +327,15 @@ class TestRewardUtilities(unittest.TestCase):
     self.assertAlmostEqual(val2, margin_value)
     self.assertGreater(val1, val2)
 
-  def test_tolerance_bounds_error(self):
+  def test_gaussian_bounds_error(self):
     with self.assertRaises(ValueError):
       rewards.tolerance(0, bounds=(1, 0))
 
-  def test_tolerance_margin_error(self):
+  def test_gaussian_margin_error(self):
     with self.assertRaises(ValueError):
       self.assertRaises(rewards.tolerance(0, margin=-1))
 
-  def test_tolerance_margin_value_error(self):
+  def test_gaussian_margin_value_error(self):
     with self.assertRaises(ValueError):
       self.assertRaises(rewards.tolerance(0, margin_value=0))
 
