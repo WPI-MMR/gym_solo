@@ -4,18 +4,12 @@ from gym.spaces import space
 
 import numpy as np
 import pybullet as p
-import pybullet_data as pbd
-import pybullet_utils.bullet_client as bc
-import random
 import time
 
 import gym
 from gym import spaces
 
 from gym_solo.core.configs import Solo8BaseConfig
-from gym_solo.core import obs
-from gym_solo.core import rewards
-from gym_solo.core import termination as terms
 from gym_solo.envs import Solo8BaseEnv
 
 from gym_solo import solo_types
@@ -80,8 +74,7 @@ class Solo8VanillaEnv(Solo8BaseEnv):
     """The agent takes a step in the environment.
 
     Args:
-      action (List[float]): The torques applied to the motors in N•m. Note
-        len(action) == the # of actuator
+      action (List[float]): The positions to set the motor to.
 
     Returns:
       Tuple[solo_types.obs, float, bool, Dict[Any, Any]]: A tuple of the next
@@ -89,10 +82,7 @@ class Solo8VanillaEnv(Solo8BaseEnv):
         terminates, and an info dict for misc diagnostic details.
     """
     if self._normalize:
-      a = np.array(action)
-      low = self._action_space.low
-      hi = self._action_space.high
-      action = low + (((a + 1) * (hi - low)) / 2)
+      action = np.array(action) * self._action_space.high
     
     self.client.setJointMotorControlArray(
       self.robot, np.arange(self.action_space.shape[0]), p.POSITION_CONTROL, 
@@ -117,7 +107,18 @@ class Solo8VanillaEnv(Solo8BaseEnv):
     Returns:
       solo_types.obs: The initial observation of the space.
     """
-    self.client.removeBody(self.robot)
+    self.client.resetSimulation()
+    self.client.setGravity(*self.config.gravity)
+
+    if self.config.dt:
+      self.client.setPhysicsEngineParameter(fixedTimeStep=self.config.dt, 
+                                            numSubSteps=1)
+    else:
+      self.client.setRealTimeSimulation(1)
+
+    self.client_configuration()
+
+    self.plane = self.client.loadURDF('plane.urdf')
     self.load_bodies()
 
     positions = [self.config.starting_joint_pos[j] 

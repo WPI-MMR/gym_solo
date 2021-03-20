@@ -1,4 +1,4 @@
-"""A demo for the Solo8 v2 Vanilla with configurable position control on the
+"""A demo for the Solo8 MMR with configurable position control on the
 the joints. 
 """
 
@@ -13,6 +13,7 @@ from gym_solo.core import termination as terms
 
 if __name__ == '__main__':
   config = solo8v2vanilla.Solo8VanillaConfig()
+  config.urdf_path = 'assets/solo8_URDF_v3/solo8_URDF_v3.urdf'
   env: solo8v2vanilla.Solo8VanillaEnv = gym.make('solo8vanilla-v0', use_gui=True, 
                                                  realtime=True, config=config)
 
@@ -55,7 +56,7 @@ if __name__ == '__main__':
   try:
     print("""\n
           =============================================
-              Solo 8 v2 Vanilla Position Control
+              Solo 8 MMR Position Control
               
           Simulation Active.
           
@@ -69,7 +70,7 @@ if __name__ == '__main__':
       user_joints = [env.client.readUserDebugParameter(param)
                      for param in joint_params]
       obs, reward, done, info = env.step(user_joints)
-
+      
       if cnt % 100 == 0:
         config.render_fov = env.client.readUserDebugParameter(
           camera_params['fov'])

@@ -200,16 +200,32 @@ class TorsoIMU(Observation):
   # TODO: Add angular acceleration to support production IMUs
   labels: List[str] = ['θx', 'θy', 'θz', 'vx', 'vy', 'vz', 'wx', 'wy', 'wz']
 
-  def __init__(self, body_id: int, degrees: bool = False):
+  def __init__(self, body_id: int, degrees: bool = False, 
+               max_lin_velocity: float = 15, 
+               max_angular_velocity: float = 10.):
     """Create a new TorsoIMU observation
 
     Args:
       body_id (int): The PyBullet body id for the robot.
       degrees (bool, optional): Whether or not to return angles in degrees. 
         Defaults to False.
+      max_lin_velocity (float, optional): The maximum linear velocity read by
+        TorsoIMU. Any torso reading made past this will just get clamped. The
+        unit is arbritary, but it is recommended that this is experimentally
+        found. Defaults to 10.
+      max_ang_velocity (float, optional): The maximum angular velocity read by
+        TorsoIMU. Any torso reading made past this will just get clamped. The
+        unit is arbritary, but it is recommended that this is experimentally
+        found. Units are in rad/s unless degrees == True. Deaults to 10.
     """
     self.robot = body_id
     self._degrees = degrees
+    self._max_lin = max_lin_velocity
+    self._max_ang = max_angular_velocity
+
+    self._low = None
+    self._high = None
+    self.observation_space # Populate the bounds incase it dosn't get called
 
   @property
   def observation_space(self) -> spaces.Box:
@@ -227,13 +243,17 @@ class TorsoIMU(Observation):
     angle_min = -180. if self._degrees else -np.pi
     angle_max = 180. if self._degrees else np.pi
 
-    lower = [angle_min, angle_min, angle_min,  # Orientation
-             -np.inf, -np.inf, -np.inf,        # Linear Velocity
-             -np.inf, -np.inf, -np.inf]        # Angular Velocity
+    lower = [angle_min, angle_min, angle_min,                 # Orientation
+             -self._max_lin, -self._max_lin, -self._max_lin,  # Linear Velocity
+             -self._max_ang, -self._max_ang, -self._max_ang]  # Angular Velocity
 
-    upper = [angle_max, angle_max, angle_max,  # Same as above
-             np.inf, np.inf, np.inf,          
-             np.inf, np.inf, np.inf]         
+    upper = [angle_max, angle_max, angle_max,                 # Same as above
+             self._max_lin, self._max_lin, self._max_lin,          
+             self._max_ang, self._max_ang, self._max_ang]         
+
+    if not (self._low and self._high):
+      self._low = lower
+      self._high = upper
 
     return spaces.Box(low=np.array(lower), high=np.array(upper))
 
@@ -242,7 +262,8 @@ class TorsoIMU(Observation):
 
     Returns:
       solo_types.obs: The observation for the current state (accessed via
-        pybullet)
+        pybullet). Note the values are bounded by self.observation_space even
+        if the true value is greater than that (i.e. the observation is clipped)
     """
     _, orien_quat = self.client.getBasePositionAndOrientation(self.robot)
 
@@ -257,24 +278,30 @@ class TorsoIMU(Observation):
       orien = np.degrees(orien)
       v_ang = np.degrees(v_ang)
 
-    return np.concatenate([orien, v_lin, v_ang])
-
+    raw_values = np.concatenate([orien, v_lin, v_ang])
+    return np.clip(raw_values, self._low, self._high)
 
 
 class MotorEncoder(Observation):
   """Get the position of the all the joints
   """
 
-  def __init__(self, body_id: int, degrees: bool = False):
+  def __init__(self, body_id: int, degrees: bool = False, 
+               max_rotation: float = None):
     """Create a new MotorEncoder observation
 
     Args:
       body_id (int): The PyBullet body id for the robot.
       degrees (bool, optional): Whether or not to return angles in degrees. 
         Defaults to False.
+      max_rotation (float, optional): Artificially limit the range of the 
+        motor encoders. Note then that the motor encoder observation space
+        then becomes (low=[-max_rotation] * joints, high=[max_rotation] * joints).
+        Defaults to the max values as per the URDF.
     """
     self.robot = body_id
     self._degrees = degrees
+    self._max_rot = max_rotation
 
   @property
   def _num_joints(self):
@@ -284,11 +311,14 @@ class MotorEncoder(Observation):
   def observation_space(self) -> spaces.Space:
     """Gets the observation space for the joints
 
-    Returns:
+    Returns::
       spaces.Space: The observation space corresponding to the labels
     """
-    lower, upper = [], []
+    if self._max_rot:
+      return spaces.Box(low=-self._max_rot, high=self._max_rot, 
+                        shape=(self._num_joints, ))
 
+    lower, upper = [], []
     for joint in range(self._num_joints):
       joint_info = self.client.getJointInfo(self.robot, joint)
       lower.append(joint_info[8])
@@ -316,7 +346,7 @@ class MotorEncoder(Observation):
 
   def compute(self) -> solo_types.obs:
     """Computes the motor position values all the joints of the robot 
-    for the current state.
+    for the current state. Clipped to the max allowed motor rotations, if set.
 
     Returns:
       solo_types.obs: The observation extracted from pybullet
@@ -326,5 +356,8 @@ class MotorEncoder(Observation):
 
     if self._degrees:
       joint_values = np.degrees(joint_values)
+
+    if self._max_rot:
+      joint_values = np.clip(joint_values, -self._max_rot, self._max_rot)
       
     return joint_values

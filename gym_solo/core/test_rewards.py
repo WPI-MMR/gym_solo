@@ -212,7 +212,7 @@ class TestHorizontalMoveSpeedReward(unittest.TestCase):
     ('at_hard_bounds', .5, 0, .5, 0, 1, 1),
     ('close_to_hard_bounds_no_soft', .5, 0, .49, 0, 0, 0),
     ('close_to_hard_bounds_soft', .5, 0, .49, 1, .95, 1),
-    ('at_soft', .5, 0, 0, .5, 0, 0.05),
+    ('at_soft', .5, 0, 0, .5, 0, 0.15),
   ])
   def test_computation(self, name, speed, target, hard, soft, low, high):
     mock_client = mock.MagicMock()
@@ -248,7 +248,7 @@ class TestTorsoHeightReward(unittest.TestCase):
     ('at_hard_bounds', .5, 1, .5, 0, 1, 1),
     ('close_to_hard_bounds_no_soft', .5, 0, .49, 0, 0, 0),
     ('close_to_hard_bounds_soft', .5, 0, .49, 1, .95, 1),
-    ('at_soft', .5, 0, 0, .5, 0, 0.05),
+    ('at_soft', .5, 0, 0, .5, 0, 0.15),
   ])
   def test_computation(self, name, height, target, hard, soft, low, high):
     mock_client = mock.MagicMock()
@@ -280,7 +280,7 @@ class TestFlatTorsoReward(unittest.TestCase):
     ('at_hard_bounds', .5, .5, 0, 1, 1),
     ('close_to_hard_bounds_no_soft', .5, .49, 0, 0, 0),
     ('close_to_hard_bounds_soft', .5, .49, 1, .95, 1),
-    ('at_soft', .5, 0, .5, 0, 0.05),
+    ('at_soft', .5, 0, .5, 0, 0.15),
   ])
   def test_computation(self, name, theta, hard, soft, low, high):
     mock_client = mock.MagicMock()

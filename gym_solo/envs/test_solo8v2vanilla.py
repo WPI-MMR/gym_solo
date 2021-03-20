@@ -117,17 +117,26 @@ class TestSolo8v2VanillaEnv(unittest.TestCase):
     mock_client = mock.MagicMock()
     env.client = mock_client
 
-    env.step([-1.] * joint_cnt)
-    _, kwargs = mock_client.setJointMotorControlArray.call_args_list[-1]
-    np.testing.assert_array_equal(
-      kwargs['targetPositions'], 
-      np.array([-config.max_motor_rotation] * joint_cnt))
+    with self.subTest('min bounds'):
+      env.step([-1.] * joint_cnt)
+      _, kwargs = mock_client.setJointMotorControlArray.call_args_list[-1]
+      np.testing.assert_array_equal(
+        kwargs['targetPositions'], 
+        np.array([-config.max_motor_rotation] * joint_cnt))
     
-    env.step([1.] * joint_cnt)
-    _, kwargs = mock_client.setJointMotorControlArray.call_args_list[-1]
-    np.testing.assert_array_equal(
-      kwargs['targetPositions'], 
-      np.array([config.max_motor_rotation] * joint_cnt))
+    with self.subTest('max bounds'):
+      env.step([1.] * joint_cnt)
+      _, kwargs = mock_client.setJointMotorControlArray.call_args_list[-1]
+      np.testing.assert_array_equal(
+        kwargs['targetPositions'], 
+        np.array([config.max_motor_rotation] * joint_cnt))
+
+    with self.subTest('at 0'):
+      env.step([0.] * joint_cnt)
+      _, kwargs = mock_client.setJointMotorControlArray.call_args_list[-1]
+      np.testing.assert_array_equal(
+        kwargs['targetPositions'], 
+        np.array([0] * joint_cnt))
 
   def test_reset(self):
     self.env.obs_factory.register_observation(CompliantObs(None))

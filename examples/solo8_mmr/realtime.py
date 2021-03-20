@@ -1,4 +1,4 @@
-""" A demo for the Solo v2 Vanilla with realtime control.
+""" A demo for the Solo MMR with realtime control.
 
 This environment is designed to act like a real robot would. There is no concept
 of a "timestep"; rather the step command should be interprated as sending
@@ -14,6 +14,8 @@ from gym_solo.core import obs
 
 if __name__ == '__main__':
   config = solo8v2vanilla_realtime.RealtimeSolo8VanillaConfig()
+  config.urdf_path = 'assets/solo8_URDF_v3/solo8_URDF_v3.urdf'
+
   env = gym.make('solo8vanilla-realtime-v0', config=config)
   env.obs_factory.register_observation(obs.TorsoIMU(env.robot))
 
@@ -31,7 +33,7 @@ if __name__ == '__main__':
     while True:
       pos = float(input('Which position do you want to set all the joints to?: '))
       if pos == 69.:
-        env.reset()
+        num_bodies = env.client.getNumBodies()
       else:
         action = np.full(env.action_space.shape, pos)
         env.step(action)
