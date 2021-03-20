@@ -373,7 +373,15 @@ class TorsoHeightReward(Reward):
                      margin=self._soft_margin)
 
 
-def tolerance(x: float, bounds: Tuple[float, float] = (0., 0.), 
+def tolerance(*args, **kwargs):
+  """Filler function while other sloped methods are being put in. Most functions
+    will switch out their tolerance function, so it doesn't make sense to do a 
+    giant refactor just yet.
+  """
+  return gaussian(*args, **kwargs)
+
+
+def gaussian(x: float, bounds: Tuple[float, float] = (0., 0.), 
               margin: float = 0., margin_value: float = .1):
   """
   Create a sloped reward function about a given bounds range.
@@ -421,3 +429,34 @@ def tolerance(x: float, bounds: Tuple[float, float] = (0., 0.),
     value = np.where(within_bounds, 1., values)
   
   return float(value) if np.isscalar(x) else value
+
+
+def linear(x: float, target: float, span: float, symmetric = False) -> float:
+  """Create a linearly sloped reward space.
+
+  Args:
+    x (float): Value to evaluate the reward space at.
+    target (float): The value s.t. when x == target, this function 
+      returns 1.
+    span (float): The value s.t. when x >= target + span, this function returns 
+      0. symmetric (bool, optional): If true, then this function works if x is 
+      over or under target. Defaults to False.
+
+  Returns:
+    float: A value between 0 and 1. x == target evaluates to 1, x >= target +
+      span evaluates to 0. Every value in between is evalulated as the linear
+      interpolation between `target` and `span`.
+  """
+  if span == 0:
+    return 1. if x == target else 0.
+
+  x_delta = x - target
+  
+  if abs(x_delta) > abs(span):
+    return 0.
+  
+  ratio = x_delta / span
+  if not symmetric and ratio < 0:
+    return 0
+  
+  return 1 - abs(ratio)

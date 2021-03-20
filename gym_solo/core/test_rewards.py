@@ -307,13 +307,13 @@ class TestRewardUtilities(unittest.TestCase):
     ('at_margin_default_value', 2, (-1, 1), 1, 1e-8, 1e-8),
     ('at_margin_margin_value', 2, (-1, 1), 1, .25, .25),
   ])
-  def test_tolerance(self, name, x, bounds, margin, margin_value, 
+  def test_gaussian(self, name, x, bounds, margin, margin_value, 
                      expected_value):
     # Floating point issuses cause flakiness when doing an exact comparision
     self.assertAlmostEqual(rewards.tolerance(x, bounds, margin, margin_value),
                      expected_value)
 
-  def test_tolerance_relative(self):
+  def test_gaussian_relative(self):
     bounds = (0,0)
     margin = 1.
     margin_value = .25
@@ -327,17 +327,31 @@ class TestRewardUtilities(unittest.TestCase):
     self.assertAlmostEqual(val2, margin_value)
     self.assertGreater(val1, val2)
 
-  def test_tolerance_bounds_error(self):
+  def test_gaussian_bounds_error(self):
     with self.assertRaises(ValueError):
       rewards.tolerance(0, bounds=(1, 0))
 
-  def test_tolerance_margin_error(self):
+  def test_gaussian_margin_error(self):
     with self.assertRaises(ValueError):
       self.assertRaises(rewards.tolerance(0, margin=-1))
 
-  def test_tolerance_margin_value_error(self):
+  def test_gaussian_margin_value_error(self):
     with self.assertRaises(ValueError):
       self.assertRaises(rewards.tolerance(0, margin_value=0))
+
+  @parameterized.expand([
+    ('at_target', 5, 0, False, 5, 1.),
+    ('at_span', 5, 2, False, 7, 0.),
+    ('negative_span', 5, -4, False, 2, 0.25),
+    ('past_span_positive', 5, 4, False, 10, 0),
+    ('past_span_negative', 5, -4, False, 0, 0),
+    ('in_span_positive_symmetric', 5, 4, True, 6, 0.75),
+    ('in_flipped_span_positive_symmetric', 5, 4, True, 4, 0.75),
+    ('in_span_negative_symmetric', 5, -4, True, 4, 0.75),
+    ('in_flipped_span_negative_symmetric', 5, -4, True, 6, 0.75),
+  ])
+  def test_linear(self, name, target, span, symmetric, x, expected):
+    self.assertEqual(rewards.linear(x, target, span, symmetric), expected)
 
 if __name__ == '__main__':
   unittest.main()
