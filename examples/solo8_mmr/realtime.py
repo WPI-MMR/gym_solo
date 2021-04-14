@@ -14,10 +14,12 @@ from gym_solo.core import obs
 
 if __name__ == '__main__':
   config = solo8v2vanilla_realtime.RealtimeSolo8VanillaConfig()
-  config.urdf_path = 'assets/solo8_URDF_v3/solo8_URDF_v3.urdf'
+  config.urdf_path = 'assets/solo8_URDF_v4/solo8_URDF_v4.urdf'
 
   env = gym.make('solo8vanilla-realtime-v0', config=config)
   env.obs_factory.register_observation(obs.TorsoIMU(env.robot))
+
+  env.step(np.full(env.action_space.shape, 0))
 
   try:
     print("""\n
