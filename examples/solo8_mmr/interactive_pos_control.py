@@ -13,7 +13,7 @@ from gym_solo.core import termination as terms
 
 if __name__ == '__main__':
   config = solo8v2vanilla.Solo8VanillaConfig()
-  config.urdf_path = 'assets/solo8_URDF_v3/solo8_URDF_v3.urdf'
+  config.urdf_path = 'assets/solo8_URDF_v4/solo8_URDF_v4.urdf'
   env: solo8v2vanilla.Solo8VanillaEnv = gym.make('solo8vanilla-v0', use_gui=True, 
                                                  realtime=True, config=config)
 
